@@ -1,4 +1,4 @@
-import type { Product, ProductImage, ProductListItem, CategoryRef } from './types/shop.js';
+import type { Product, ProductImage, ProductListItem } from './types/shop.js';
 
 export function getEffectivePrice(
   product: Pick<ProductListItem, 'memberPrice' | 'discountPrice' | 'price'>,

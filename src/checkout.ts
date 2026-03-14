@@ -28,7 +28,7 @@ export function validateCheckoutForm(
     !fields.addressLine1.trim() ||
     !fields.city.trim()
   ) {
-    return 'Please fill in all required fields';
+    return 'REQUIRED_FIELDS_MISSING';
   }
   return null;
 }
