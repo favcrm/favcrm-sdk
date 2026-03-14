@@ -1,9 +1,38 @@
 {
   "name": "@favcrm/sdk",
   "version": "0.1.0",
+  "description": "FavCRM SDK - Shared business logic for shop, checkout, and promotions",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
-  "files": ["src"]
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsgo",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsgo --noEmit",
+    "lint": "eslint src"
+  },
+  "keywords": [
+    "favcrm",
+    "sdk",
+    "shop",
+    "checkout",
+    "promotions"
+  ],
+  "author": "FavCRM Team",
+  "license": "MIT",
+  "packageManager": "pnpm@10.28.2",
+  "devDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev",
+    "vitest": "^2.0.0"
+  }
 }
