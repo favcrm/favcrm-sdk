@@ -5,10 +5,15 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "browser": "./dist/favcrm-sdk.iife.js",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./browser": {
+      "import": "./dist/favcrm-sdk.js",
+      "script": "./dist/favcrm-sdk.iife.js"
     }
   },
   "files": [
@@ -16,6 +21,7 @@
   ],
   "scripts": {
     "build": "tsgo",
+    "build:lib": "vite build --config vite.config.lib.ts",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "type-check": "tsgo --noEmit",
@@ -38,6 +44,7 @@
   "devDependencies": {
     "@typescript/native-preview": "^7.0.0-dev",
     "@vitest/coverage-v8": "^2.1.9",
+    "vite": "^6.0.0",
     "vitest": "^2.1.9"
   }
 }

@@ -1,4 +1,4 @@
-// Types
+// Types — Shop
 export type {
   ProductImage,
   ProductOptionValue,
@@ -21,6 +21,28 @@ export type {
   AppliedCoupon,
 } from './types/promotion.js';
 
+// Types — Member
+export type {
+  RegistrationSubmission,
+  RegistrationResult,
+} from './types/member.js';
+
+// Types — Event
+export type {
+  EventListItem,
+  EventDetail,
+  EventSession,
+  EventRegistrationSubmission,
+  EventRegistrationResult,
+} from './types/event.js';
+
+// Types — Portal
+export type {
+  CouponClaimSubmission,
+  CouponClaimResult,
+  PortalConfig,
+} from './types/portal.js';
+
 // Shop logic
 export {
   getEffectivePrice,
@@ -42,3 +64,17 @@ export type { CheckoutFormFields } from './checkout.js';
 
 // Coupon logic
 export { buildAppliedCoupon, getCouponErrorMessage } from './coupon.js';
+
+// API Client
+export { FavCRMClient, FavCRMError } from './client.js';
+export type { FavCRMConfig, ProductListParams } from './client.js';
+
+// Validation
+export {
+  validateEmail,
+  validatePhone,
+  validateRequired,
+  validateRegistrationForm,
+  validateEventRegistrationForm,
+} from './validation.js';
+export type { ValidationError } from './validation.js';
