@@ -10,11 +10,13 @@ export interface BookingService {
   coverImage: string | null;
   requiresStaff: boolean;
   requiresResource: boolean;
+  paymentRequired: boolean;
+  requiresConfirmation: boolean;
   categoryId: string | null;
   categoryName: string | null;
 }
 
-export type BookingStatus = "draft" | "confirmed" | "cancelled" | "completed";
+export type BookingStatus = "draft" | "pending" | "confirmed" | "cancelled" | "completed";
 
 export interface Booking {
   id: string;
@@ -40,4 +42,14 @@ export interface TimeSlot {
   tierPrice?: string;
   tierName?: string | null;
   priceType?: string;
+}
+
+export interface BookingConfig {
+  advanceBookingDays: number | null;
+  isAllowed: boolean;
+  dailyBookingCount: number | null;
+  weeklyBookingCount: number | null;
+  weeklyHoursLimit: number | null;
+  currentDailyUsage: number;
+  currentWeeklyUsage: number;
 }
