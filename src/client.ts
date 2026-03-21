@@ -1,5 +1,5 @@
 import type { RegistrationSubmission, RegistrationResult } from './types/member.js';
-import type { EventListItem, EventDetail, EventRegistrationSubmission, EventRegistrationResult } from './types/event.js';
+import type { ApiEvent, EventRegistrationSubmission, EventRegistrationResult } from './types/event.js';
 import type { CouponClaimSubmission, CouponClaimResult } from './types/portal.js';
 import type {
   Product,
@@ -140,12 +140,12 @@ export class FavCRMClient {
     return this.request<ShippingMethod[]>('GET', `${this.brandPath}/shop/shipping-methods/`);
   }
 
-  async getEvents(): Promise<EventListItem[]> {
-    return this.request<EventListItem[]>('GET', `${this.brandPath}/events/`);
+  async getEvents(): Promise<ApiEvent[]> {
+    return this.request<ApiEvent[]>('GET', `${this.brandPath}/events/`);
   }
 
-  async getEvent(slug: string): Promise<EventDetail> {
-    return this.request<EventDetail>('GET', `${this.brandPath}/events/${slug}/`);
+  async getEvent(slug: string): Promise<ApiEvent> {
+    return this.request<ApiEvent>('GET', `${this.brandPath}/events/${slug}/`);
   }
 }
 

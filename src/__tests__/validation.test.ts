@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   validateEmail,
   validatePhone,
+  validateOtp,
   validateRequired,
   validateRegistrationForm,
   validateEventRegistrationForm,
@@ -39,18 +40,40 @@ describe('validatePhone', () => {
     '+85291234567',
     '+852 9123 4567',
     '852-9123-4567',
-  ])('accepts valid HK phone: %s', (phone) => {
+    '+14155552671',
+    '0123 456 7890',
+  ])('accepts valid phone: %s', (phone) => {
     expect(validatePhone(phone)).toBe(true);
   });
 
   it.each([
     '',
-    '1234567',     // 7 digits
-    '01234567',    // starts with 0
-    '123456789',   // 9 digits
+    '123',         // too short
+    '123456',      // too short (< 7 digits)
     'abcdefgh',
+    'not-a-phone',
   ])('rejects invalid phone: %s', (phone) => {
     expect(validatePhone(phone)).toBe(false);
+  });
+});
+
+describe('validateOtp', () => {
+  it.each([
+    '123456',
+    '000000',
+    '999999',
+  ])('accepts valid OTP: %s', (otp) => {
+    expect(validateOtp(otp)).toBe(true);
+  });
+
+  it.each([
+    '',
+    '12345',       // 5 digits
+    '1234567',     // 7 digits
+    'abcdef',
+    '12 34 56',
+  ])('rejects invalid OTP: %s', (otp) => {
+    expect(validateOtp(otp)).toBe(false);
   });
 });
 

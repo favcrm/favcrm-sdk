@@ -8,15 +8,24 @@ export interface ValidationError {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const HK_PHONE_RE = /^(?:\+?852[-\s]?)?[2-9]\d{3}[-\s]?\d{4}$/;
+const PHONE_RE = /^\+?[\d\s\-().]{7,20}$/;
+const OTP_RE = /^\d{6}$/;
 const BIRTH_MMDD_RE = /^\d{4}$/;
 
 export function validateEmail(email: string): boolean {
   return EMAIL_RE.test(email.trim());
 }
 
+/**
+ * Basic phone format validation. For strict international validation,
+ * use libphonenumber-js at the call site.
+ */
 export function validatePhone(phone: string): boolean {
-  return HK_PHONE_RE.test(phone.trim());
+  return PHONE_RE.test(phone.trim());
+}
+
+export function validateOtp(otp: string): boolean {
+  return OTP_RE.test(otp);
 }
 
 export function validateRequired(

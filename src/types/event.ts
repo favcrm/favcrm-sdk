@@ -1,27 +1,71 @@
-export interface EventListItem {
-  id: number;
+/** Raw event shape from the v6 customer-portal API. */
+export interface ApiEvent {
+  id: string;
   slug: string;
   title: string;
-  startDate: string;
-  endDate: string;
-  location: string;
-  ticketPrice: number;
+  introduction?: string | null;
+  content?: string | null;
+  price: number;
+  currency: string;
   status: string;
-  capacity: number;
-  imageUrl?: string;
+  venue: string | null;
+  venueAddress?: string | null;
+  image?: string | null;
+  quota?: string | null;
+  showRemainingQuota?: boolean;
+  dates: ApiEventDate[];
 }
 
-export interface EventDetail extends EventListItem {
-  description: string;
-  sessions: EventSession[];
-}
-
-export interface EventSession {
-  id: number;
-  date: string;
+/** Raw event date shape from the v6 API. */
+export interface ApiEventDate {
+  id?: string;
   startTime: string;
-  endTime: string;
-  availableSlots: number;
+  endTime?: string | null;
+  allDay?: boolean;
+  remainingQuota?: number;
+}
+
+/** Normalized event date used throughout the app. */
+export interface EventDate {
+  id: string | null;
+  startTime: string;
+  endTime: string | null;
+  allDay: boolean;
+  remainingQuota: number | null;
+}
+
+export type EventStatus = "upcoming" | "ongoing" | "past" | "cancelled" | "published";
+
+/** Normalized event used throughout the app. */
+export interface Event {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  dates: EventDate[];
+  location: string | null;
+  price: number;
+  currency: string;
+  isFree: boolean;
+  capacity: number | null;
+  remainingQuota: number | null;
+  status: EventStatus;
+}
+
+export type EventRegistrationStatus = "pending" | "confirmed" | "cancelled" | "paid";
+
+export interface EventRegistration {
+  id: string;
+  eventSlug: string;
+  eventTitle: string;
+  status: EventRegistrationStatus;
+  registeredAt: string;
+  totalAmount: number;
+  currency: string;
+  paymentRequired: boolean;
 }
 
 export interface EventRegistrationSubmission {

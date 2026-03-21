@@ -23,25 +23,56 @@ export type {
 
 // Types — Member
 export type {
+  MembershipTier,
+  Member,
+  ApiMembershipTier,
+  ApiMember,
+  CardSettings,
+  PaymentMethod,
+  RegistrationField,
+  RegistrationFormConfig,
+  ReferralLookupResult,
   RegistrationSubmission,
   RegistrationResult,
 } from './types/member.js';
 
 // Types — Event
 export type {
-  EventListItem,
-  EventDetail,
-  EventSession,
+  ApiEvent,
+  ApiEventDate,
+  EventDate,
+  EventStatus,
+  Event,
+  EventRegistrationStatus,
+  EventRegistration,
   EventRegistrationSubmission,
   EventRegistrationResult,
 } from './types/event.js';
+
+// Types — Booking
+export type {
+  BookingService,
+  BookingStatus,
+  Booking,
+  TimeSlot,
+} from './types/booking.js';
 
 // Types — Portal
 export type {
   CouponClaimSubmission,
   CouponClaimResult,
   PortalConfig,
+  FeatureKey,
 } from './types/portal.js';
+
+// Modules logic
+export { MODULE_CODE_TO_FEATURE, ALL_FEATURE_KEYS, modulesToFeatures } from './modules.js';
+
+// Event logic
+export { mapApiEvent } from './events.js';
+
+// Member logic
+export { mapApiMember } from './members.js';
 
 // Shop logic
 export {
@@ -73,6 +104,7 @@ export type { FavCRMConfig, ProductListParams } from './client.js';
 export {
   validateEmail,
   validatePhone,
+  validateOtp,
   validateRequired,
   validateRegistrationForm,
   validateEventRegistrationForm,
