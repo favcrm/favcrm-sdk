@@ -128,6 +128,7 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
       memberPrice: variation.memberPrice,
       seoTitle: product.seoTitle,
       status: product.status,
+      productType: product.productType,
       stockStatus: variation.stockStatus,
       categoryName: product.categoryName,
       categories: product.categories,
@@ -145,6 +146,7 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
     memberPrice: product.memberPrice,
     seoTitle: product.seoTitle,
     status: product.status,
+    productType: product.productType,
     stockStatus: product.stockStatus,
     categoryName: product.categoryName,
     categories: product.categories,
@@ -170,4 +172,28 @@ export function findVariation(
 
 export function getVariationLabel(variation: ProductVariation): string {
   return variation.selectedOptions.map((so) => so.value).join(' / ');
+}
+
+export function isSubscriptionProduct(
+  product: Pick<ProductListItem, 'productType'>,
+): boolean {
+  return product.productType === 'subscription';
+}
+
+export function formatSubscriptionPrice(
+  price: number,
+  billingCycle: string,
+  currency: string = 'HKD',
+): string {
+  const formatted = new Intl.NumberFormat('zh-HK', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+  }).format(price);
+  const suffix = billingCycle === 'monthly' ? '/月' : '/年';
+  return `${formatted}${suffix}`;
+}
+
+export function getMonthlyEquivalent(plan: { price: number; billingCycle: string }): number {
+  return plan.billingCycle === 'yearly' ? Math.round((plan.price / 12) * 100) / 100 : plan.price;
 }

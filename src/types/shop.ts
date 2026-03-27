@@ -66,6 +66,7 @@ export interface Product {
   seoDescription: string | null;
   shippingWeight: number | null;
   status: string;
+  productType: string;
   stockQuantity: number;
   stockStatus: string;
   categoryId: number | null;
@@ -90,6 +91,7 @@ export interface ProductListItem {
   memberPrice: number | null;
   seoTitle: string | null;
   status: string | null;
+  productType: string;
   stockStatus: string;
   categoryName: string | null;
   categories: CategoryRef[];
@@ -158,5 +160,38 @@ export interface ShopOrder {
   shippingCost: number;
   totalAmount: number;
   items: ShopOrderItem[];
+  createdAt: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  productId: number;
+  billingCycle: string;
+  price: number;
+  currency: string;
+  trialDays: number;
+  linkedPackageId: number | null;
+  tokensPerCycle: number | null;
+  gatewayPriceId: string | null;
+  gatewayType: string | null;
+  isActive: boolean;
+}
+
+export interface ProductSubscription {
+  id: string;
+  planId: string;
+  productId: number;
+  productName: string;
+  billingCycle: string;
+  status: string;
+  subscriptionMode: string;
+  amount: number;
+  currency: string;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  nextBillingDate: string | null;
+  autoRenew: boolean;
+  gatewaySubscriptionId: string | null;
+  cancelledAt: string | null;
   createdAt: string;
 }

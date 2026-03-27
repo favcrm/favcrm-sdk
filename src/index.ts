@@ -13,6 +13,8 @@ export type {
   CreateOrderRequest,
   ShopOrderItem,
   ShopOrder,
+  SubscriptionPlan,
+  ProductSubscription,
 } from './types/shop.js';
 
 export type {
@@ -119,6 +121,9 @@ export {
   filterProducts,
   filterProductsByCategory,
   highlightSearchMatch,
+  isSubscriptionProduct,
+  formatSubscriptionPrice,
+  getMonthlyEquivalent,
 } from './shop.js';
 export type { SearchMatchSegment } from './shop.js';
 
