@@ -28,6 +28,8 @@ export type {
   ApiMembershipTier,
   ApiMember,
   CardSettings,
+  CardField,
+  CardLayoutConfig,
   PaymentMethod,
   RegistrationField,
   RegistrationFormConfig,
@@ -54,8 +56,35 @@ export type {
   BookingService,
   BookingStatus,
   Booking,
+  BookingDetail,
+  BookingLineItem,
+  BookingStatusChange,
   TimeSlot,
+  BookingConfig,
 } from './types/booking.js';
+
+// Types — Invoice
+export type {
+  InvoiceStatus,
+  Invoice,
+  InvoiceLineItem,
+  InvoiceDetail,
+} from './types/invoice.js';
+
+// Types — Blog
+export type {
+  BlogAuthor,
+  BlogCategory,
+  BlogTag,
+  BlogPostListItem,
+  BlogPost,
+} from './types/blog.js';
+
+// Types — Contact
+export type {
+  ContactEnquirySubmission,
+  ContactEnquiryResult,
+} from './types/contact.js';
 
 // Types — Portal
 export type {
@@ -83,7 +112,15 @@ export {
   getCategoryLabel,
   getPrimaryImage,
   toCartProduct,
+  findVariation,
+  getVariationLabel,
+  normalizeSearchQuery,
+  matchesSearchQuery,
+  filterProducts,
+  filterProductsByCategory,
+  highlightSearchMatch,
 } from './shop.js';
+export type { SearchMatchSegment } from './shop.js';
 
 // Checkout logic
 export {
@@ -98,7 +135,7 @@ export { buildAppliedCoupon, getCouponErrorMessage } from './coupon.js';
 
 // API Client
 export { FavCRMClient, FavCRMError } from './client.js';
-export type { FavCRMConfig, ProductListParams } from './client.js';
+export type { FavCRMConfig, BlogListParams, ProductListParams } from './client.js';
 
 // Validation
 export {
@@ -108,5 +145,6 @@ export {
   validateRequired,
   validateRegistrationForm,
   validateEventRegistrationForm,
+  validateContactForm,
 } from './validation.js';
 export type { ValidationError } from './validation.js';

@@ -102,3 +102,25 @@ export function validateEventRegistrationForm(
 
   return errors;
 }
+
+export function validateContactForm(
+  data: Partial<{ name: string; email: string; phone?: string; message: string }>,
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  if (!data.name?.trim()) {
+    errors.push({ field: 'name', code: 'REQUIRED', message: 'Name is required' });
+  }
+
+  if (!data.email?.trim()) {
+    errors.push({ field: 'email', code: 'REQUIRED', message: 'Email is required' });
+  } else if (!validateEmail(data.email)) {
+    errors.push({ field: 'email', code: 'INVALID_FORMAT', message: 'Invalid email format' });
+  }
+
+  if (!data.message?.trim()) {
+    errors.push({ field: 'message', code: 'REQUIRED', message: 'Message is required' });
+  }
+
+  return errors;
+}
