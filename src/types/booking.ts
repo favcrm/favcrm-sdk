@@ -12,6 +12,7 @@ export interface BookingService {
   requiresResource: boolean;
   paymentRequired: boolean;
   requiresConfirmation: boolean;
+  requireLogin: boolean;
   advanceBookingDays: number | null;
   categoryId: string | null;
   categoryName: string | null;
