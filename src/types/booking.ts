@@ -12,11 +12,12 @@ export interface BookingService {
   requiresResource: boolean;
   paymentRequired: boolean;
   requiresConfirmation: boolean;
+  advanceBookingDays: number | null;
   categoryId: string | null;
   categoryName: string | null;
 }
 
-export type BookingStatus = "draft" | "pending" | "confirmed" | "cancelled" | "completed";
+export type BookingStatus = "draft" | "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
 
 export interface Booking {
   id: string;
@@ -29,6 +30,29 @@ export interface Booking {
   totalPrice: string;
   currency: string;
   createdAt: string;
+}
+
+export interface BookingLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: string;
+  total: string;
+}
+
+export interface BookingStatusChange {
+  fromStatus: string | null;
+  toStatus: string;
+  createdAt: string;
+}
+
+export interface BookingDetail extends Booking {
+  subtotal: string;
+  addonsTotal: string;
+  totalDurationMinutes: number;
+  notes: string | null;
+  cancellationReason: string | null;
+  lineItems: BookingLineItem[];
+  statusHistory: BookingStatusChange[];
 }
 
 export interface TimeSlot {

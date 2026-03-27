@@ -29,6 +29,20 @@ describe('mapApiMember', () => {
     expect(result.name).toBe('Alice');
     expect(result.email).toBe('alice@example.com');
     expect(result.phone).toBe('+85291234567');
+    expect(result.code).toBe('M001');
+    expect(result.points).toBe(100);
+    expect(result.stamps).toBe(5);
+  });
+
+  it('defaults code to null when null', () => {
+    const result = mapApiMember(makeApiMember({ code: null }));
+    expect(result.code).toBeNull();
+  });
+
+  it('defaults points and stamps to 0 when missing', () => {
+    const result = mapApiMember(makeApiMember({ points: 0, stamps: 0 }));
+    expect(result.points).toBe(0);
+    expect(result.stamps).toBe(0);
   });
 
   it('defaults name to empty string when null', () => {

@@ -8,6 +8,9 @@ export function mapApiMember(api: ApiMember): Member {
     email: api.email ?? null,
     phone: api.phone ?? "",
     avatarUrl: null,
+    code: api.code ?? null,
+    points: api.points ?? 0,
+    stamps: api.stamps ?? 0,
     membershipTier: api.membershipTier
       ? {
           id: String(api.membershipTier.id),

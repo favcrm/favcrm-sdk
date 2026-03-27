@@ -100,6 +100,8 @@ export interface ProductListItem {
 export interface CartItem {
   product: ProductListItem;
   quantity: number;
+  variationId?: number;
+  variationName?: string;
 }
 
 export interface ShopCategory {
@@ -119,7 +121,7 @@ export interface ShippingMethod {
 }
 
 export interface CreateOrderRequest {
-  lineItems: { productId: number; quantity: number }[];
+  lineItems: { productId: number; quantity: number; variationId?: number }[];
   customerInfo: {
     firstName: string;
     lastName: string;

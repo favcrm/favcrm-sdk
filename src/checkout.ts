@@ -43,6 +43,7 @@ export function buildCreateOrderRequest(
     lineItems: cart.map((item) => ({
       productId: item.product.id,
       quantity: item.quantity,
+      ...(item.variationId != null && { variationId: item.variationId }),
     })),
     customerInfo: {
       firstName: form.firstName.trim(),

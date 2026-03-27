@@ -10,6 +10,7 @@ import type {
   ShopOrder,
 } from './types/shop.js';
 import type { PromotionValidationRequest, PromotionValidationResponse } from './types/promotion.js';
+import type { BlogPostListItem, BlogPost, BlogCategory } from './types/blog.js';
 
 export interface FavCRMConfig {
   baseUrl: string;
@@ -147,6 +148,28 @@ export class FavCRMClient {
   async getEvent(slug: string): Promise<ApiEvent> {
     return this.request<ApiEvent>('GET', `${this.brandPath}/events/${slug}/`);
   }
+
+  // --- Blog endpoints (public, no auth needed) ---
+
+  async getBlogPosts(params?: BlogListParams): Promise<BlogPostListItem[]> {
+    const qs = params ? `?${new URLSearchParams(toStringRecord(params))}` : '';
+    return this.request<BlogPostListItem[]>('GET', `${this.brandPath}/blog/posts/${qs}`);
+  }
+
+  async getBlogPost(slug: string): Promise<BlogPost> {
+    return this.request<BlogPost>('GET', `${this.brandPath}/blog/posts/${slug}/`);
+  }
+
+  async getBlogCategories(): Promise<BlogCategory[]> {
+    return this.request<BlogCategory[]>('GET', `${this.brandPath}/blog/categories/`);
+  }
+}
+
+export interface BlogListParams {
+  category?: string;
+  tag?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface ProductListParams {

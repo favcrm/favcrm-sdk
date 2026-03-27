@@ -17,6 +17,9 @@ export interface Member {
   email: string | null;
   phone: string;
   avatarUrl: string | null;
+  code: string | null;
+  points: number;
+  stamps: number;
   membershipTier: MembershipTier | null;
 }
 
@@ -58,12 +61,28 @@ export interface ApiMember {
   membershipTier: ApiMembershipTier | null;
 }
 
+export interface CardField {
+  variable: string;
+  label: string;
+  type?: 'header' | 'secondary';
+  id?: string;
+  value?: string;
+  children?: CardField[][];
+}
+
+export interface CardLayoutConfig {
+  web?: { fields: CardField[] };
+}
+
 export interface CardSettings {
   brandName: string;
   brandLogoUrl: string | null;
   brandColor: string;
+  foregroundColor: string;
   cardBackgroundUrl: string | null;
   showQrCode: boolean;
+  displayPointType: string;
+  cardLayoutConfig: CardLayoutConfig | null;
 }
 
 export interface PaymentMethod {

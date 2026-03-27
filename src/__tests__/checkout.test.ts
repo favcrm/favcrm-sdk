@@ -78,4 +78,27 @@ describe('buildCreateOrderRequest', () => {
     expect(req.shippingMethodId).toBeUndefined();
     expect(req.promotionCode).toBeUndefined();
   });
+
+  it('includes variationId when present in cart item', () => {
+    const cartWithVariation: CartItem[] = [
+      {
+        product: {
+          id: 1, name: 'Item', description: '', slug: null,
+          price: 100, discountPrice: null, memberPrice: null,
+          seoTitle: null, status: null, stockStatus: 'instock',
+          categoryName: null, categories: [], isVariable: true, image: null,
+        },
+        quantity: 1,
+        variationId: 42,
+        variationName: 'Large / Blue',
+      },
+    ];
+    const req = buildCreateOrderRequest(cartWithVariation, form, null);
+    expect(req.lineItems[0].variationId).toBe(42);
+  });
+
+  it('omits variationId when not present', () => {
+    const req = buildCreateOrderRequest(cart, form, null);
+    expect(req.lineItems[0]).not.toHaveProperty('variationId');
+  });
 });
