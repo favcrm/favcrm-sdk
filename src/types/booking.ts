@@ -34,10 +34,15 @@ export interface Booking {
 }
 
 export interface BookingLineItem {
-  description: string;
-  quantity: number;
-  unitPrice: string;
-  total: string;
+  id: string;
+  type: string;
+  name: string;
+  description: string | null;
+  price: string;
+  memberTierPrice: string | null;
+  durationMinutes: number;
+  occurrenceStart: string | null;
+  occurrenceEnd: string | null;
 }
 
 export interface BookingStatusChange {
@@ -49,6 +54,8 @@ export interface BookingStatusChange {
 export interface BookingDetail extends Booking {
   subtotal: string;
   addonsTotal: string;
+  discountAmount: string | null;
+  promotionCode: string | null;
   totalDurationMinutes: number;
   notes: string | null;
   cancellationReason: string | null;
