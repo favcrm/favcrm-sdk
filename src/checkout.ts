@@ -33,11 +33,18 @@ export function validateCheckoutForm(
   return null;
 }
 
+export interface PaymentOptions {
+  paymentMethodId?: string;
+  successUrl?: string;
+  cancelUrl?: string;
+}
+
 export function buildCreateOrderRequest(
   cart: CartItem[],
   form: CheckoutFormFields,
   shippingMethodId: number | null,
   promotionCode?: string,
+  payment?: PaymentOptions,
 ): CreateOrderRequest {
   return {
     lineItems: cart.map((item) => ({
@@ -59,5 +66,8 @@ export function buildCreateOrderRequest(
     },
     shippingMethodId: shippingMethodId ?? undefined,
     promotionCode,
+    ...(payment?.paymentMethodId != null && { paymentMethodId: payment.paymentMethodId }),
+    ...(payment?.successUrl != null && { successUrl: payment.successUrl }),
+    ...(payment?.cancelUrl != null && { cancelUrl: payment.cancelUrl }),
   };
 }

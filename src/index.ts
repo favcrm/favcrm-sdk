@@ -13,6 +13,7 @@ export type {
   CreateOrderRequest,
   ShopOrderItem,
   ShopOrder,
+  PaymentMethodOption,
   SubscriptionPlan,
   ProductSubscription,
 } from './types/shop.js';
@@ -133,7 +134,7 @@ export {
   validateCheckoutForm,
   buildCreateOrderRequest,
 } from './checkout.js';
-export type { CheckoutFormFields } from './checkout.js';
+export type { CheckoutFormFields, PaymentOptions } from './checkout.js';
 
 // Coupon logic
 export { buildAppliedCoupon, getCouponErrorMessage } from './coupon.js';

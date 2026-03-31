@@ -140,6 +140,18 @@ export interface CreateOrderRequest {
   };
   shippingMethodId?: number;
   promotionCode?: string;
+  paymentMethodId?: string;
+  successUrl?: string;
+  cancelUrl?: string;
+}
+
+export interface PaymentMethodOption {
+  id: string;
+  name: string;
+  type: string;
+  instructions: string | null;
+  hasGateway: boolean;
+  position: number;
 }
 
 export interface ShopOrderItem {
@@ -161,6 +173,8 @@ export interface ShopOrder {
   totalAmount: number;
   items: ShopOrderItem[];
   createdAt: string;
+  paymentUrl?: string;
+  paymentInstructions?: string;
 }
 
 export interface SubscriptionPlan {
