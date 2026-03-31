@@ -139,10 +139,6 @@ export type { CheckoutFormFields, PaymentOptions } from './checkout.js';
 // Coupon logic
 export { buildAppliedCoupon, getCouponErrorMessage } from './coupon.js';
 
-// API Client
-export { FavCRMClient, FavCRMError } from './client.js';
-export type { FavCRMConfig, BlogListParams, ProductListParams } from './client.js';
-
 // Validation
 export {
   validateEmail,
