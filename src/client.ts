@@ -76,6 +76,10 @@ export class FavCRM {
     this.promotions = new PromotionsClient(this);
   }
 
+  get companyId(): string {
+    return this.config.companyId;
+  }
+
   setToken(jwt: string): void {
     this.jwt = jwt;
   }
@@ -207,9 +211,8 @@ export interface TimeSlotsResponse {
 }
 
 export interface StaffMember {
-  id: number;
-  name: string;
-  avatar?: string;
+  memberId: string;
+  memberName: string;
 }
 
 class BookingsClient {
@@ -250,6 +253,10 @@ class BookingsClient {
   get(bookingId: string): Promise<BookingDetail> {
     return this.sdk.request('GET', `/bookings/${bookingId}`);
   }
+
+  getAccessQr(bookingId: string): Promise<{ qrContent: string; expiresAt: string; bookingId: string }> {
+    return this.sdk.request('POST', `/bookings/${bookingId}/access-qr`);
+  }
 }
 
 class EventsClient {
@@ -269,6 +276,10 @@ class EventsClient {
 
   listRegistrations(): Promise<EventRegistration[]> {
     return this.sdk.request('GET', '/event-registrations');
+  }
+
+  createPaymentIntent(registrationId: string): Promise<PaymentIntentResponse> {
+    return this.sdk.request('POST', `/event-registrations/${registrationId}/payment-intent`);
   }
 }
 
@@ -290,6 +301,18 @@ class MembersClient {
   listPaymentMethods(): Promise<PaymentMethod[]> {
     return this.sdk.request('GET', '/payment-methods');
   }
+
+  addPaymentMethod(token: string): Promise<PaymentMethod> {
+    return this.sdk.request('POST', '/payment-methods', { body: { token } });
+  }
+
+  deletePaymentMethod(methodId: string): Promise<void> {
+    return this.sdk.request('DELETE', `/payment-methods/${methodId}`);
+  }
+
+  setDefaultPaymentMethod(methodId: string): Promise<void> {
+    return this.sdk.request('POST', `/payment-methods/${methodId}/set-default`);
+  }
 }
 
 export interface PaymentGateway {
@@ -306,6 +329,8 @@ export interface PaymentIntentRequest {
 export interface PaymentIntentResponse {
   clientSecret: string;
   paymentIntentId: string;
+  publishableKey?: string;
+  stripeAccount?: string;
 }
 
 class PaymentsClient {
