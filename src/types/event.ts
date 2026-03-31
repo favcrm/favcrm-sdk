@@ -70,11 +70,11 @@ export interface EventRegistration {
 
 export interface EventRegistrationSubmission {
   eventSlug: string;
-  sessionId: number;
-  quantity: number;
   guestName: string;
   email: string;
   phone: string;
+  quantity?: number;
+  sessionId?: string;
   data?: Record<string, unknown>;
   promotionCode?: string;
 }

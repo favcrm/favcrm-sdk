@@ -11,6 +11,7 @@ import type { ApiEvent, EventRegistrationSubmission, EventRegistrationResult, Ev
 import type { BookingService, TimeSlot, Booking, BookingDetail, BookingConfig } from './types/booking.js';
 import type { Member, CardSettings, PaymentMethod } from './types/member.js';
 import type { PromotionValidationRequest, PromotionValidationResponse } from './types/promotion.js';
+import type { Invoice, InvoiceDetail } from './types/invoice.js';
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -20,6 +21,7 @@ export interface FavCRMConfig {
   baseUrl: string;
   companyId: string;
   onUnauthorized?: () => void;
+  fetch?: typeof globalThis.fetch;
 }
 
 export class FavCRMError extends Error {
@@ -65,6 +67,7 @@ export class FavCRM {
   readonly members: MembersClient;
   readonly payments: PaymentsClient;
   readonly promotions: PromotionsClient;
+  readonly invoices: InvoicesClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -74,6 +77,7 @@ export class FavCRM {
     this.members = new MembersClient(this);
     this.payments = new PaymentsClient(this);
     this.promotions = new PromotionsClient(this);
+    this.invoices = new InvoicesClient(this);
   }
 
   get companyId(): string {
@@ -103,7 +107,8 @@ export class FavCRM {
       headers['Authorization'] = `Bearer ${this.jwt}`;
     }
 
-    const response = await fetch(url, {
+    const fetchFn = this.config.fetch ?? globalThis.fetch;
+    const response = await fetchFn(url, {
       method,
       headers,
       body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
@@ -350,5 +355,17 @@ class PromotionsClient {
 
   validate(data: PromotionValidationRequest): Promise<PromotionValidationResponse> {
     return this.sdk.request('POST', '/validate-promotion', { body: data });
+  }
+}
+
+class InvoicesClient {
+  constructor(private sdk: FavCRM) {}
+
+  list(): Promise<Invoice[]> {
+    return this.sdk.request('GET', '/invoices');
+  }
+
+  get(id: string): Promise<InvoiceDetail> {
+    return this.sdk.request('GET', `/invoices/${id}`);
   }
 }
