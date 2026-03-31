@@ -1,0 +1,329 @@
+import type {
+  ProductListItem,
+  Product,
+  ShopCategory,
+  ShippingMethod,
+  PaymentMethodOption,
+  CreateOrderRequest,
+  ShopOrder,
+} from './types/shop.js';
+import type { ApiEvent, EventRegistrationSubmission, EventRegistrationResult, EventRegistration } from './types/event.js';
+import type { BookingService, TimeSlot, Booking, BookingDetail, BookingConfig } from './types/booking.js';
+import type { Member, CardSettings, PaymentMethod } from './types/member.js';
+import type { PromotionValidationRequest, PromotionValidationResponse } from './types/promotion.js';
+
+// ---------------------------------------------------------------------------
+// Config & Error
+// ---------------------------------------------------------------------------
+
+export interface FavCRMConfig {
+  baseUrl: string;
+  companyId: string;
+  onUnauthorized?: () => void;
+}
+
+export class FavCRMError extends Error {
+  status: number;
+  code?: string;
+
+  constructor(status: number, message: string, code?: string) {
+    super(message);
+    this.name = 'FavCRMError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Request helpers
+// ---------------------------------------------------------------------------
+
+type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+
+interface RequestOptions {
+  body?: unknown;
+  params?: Record<string, string>;
+}
+
+function toQueryString(params: Record<string, string>): string {
+  const qs = new URLSearchParams(params).toString();
+  return qs ? `?${qs}` : '';
+}
+
+// ---------------------------------------------------------------------------
+// Main client
+// ---------------------------------------------------------------------------
+
+export class FavCRM {
+  private config: FavCRMConfig;
+  private jwt: string | null = null;
+  private readonly base = '/v6/customer-portal';
+
+  readonly shop: ShopClient;
+  readonly bookings: BookingsClient;
+  readonly events: EventsClient;
+  readonly members: MembersClient;
+  readonly payments: PaymentsClient;
+  readonly promotions: PromotionsClient;
+
+  constructor(config: FavCRMConfig) {
+    this.config = config;
+    this.shop = new ShopClient(this);
+    this.bookings = new BookingsClient(this);
+    this.events = new EventsClient(this);
+    this.members = new MembersClient(this);
+    this.payments = new PaymentsClient(this);
+    this.promotions = new PromotionsClient(this);
+  }
+
+  setToken(jwt: string): void {
+    this.jwt = jwt;
+  }
+
+  clearToken(): void {
+    this.jwt = null;
+  }
+
+  /** @internal — used by sub-clients */
+  async request<T>(method: HttpMethod, path: string, opts?: RequestOptions): Promise<T> {
+    const qs = opts?.params ? toQueryString(opts.params) : '';
+    const url = `${this.config.baseUrl}${this.base}${path}${qs}`;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Company-Id': this.config.companyId,
+    };
+
+    if (this.jwt) {
+      headers['Authorization'] = `Bearer ${this.jwt}`;
+    }
+
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
+    });
+
+    if (response.status === 401) {
+      this.config.onUnauthorized?.();
+      throw new FavCRMError(401, 'Unauthorized');
+    }
+
+    if (!response.ok) {
+      let message = 'Request failed';
+      let code: string | undefined;
+      try {
+        const err = await response.json();
+        if (err?.error?.message) {
+          message = err.error.message;
+          code = err.error.code;
+        } else if (err?.message) {
+          message = typeof err.message === 'string' ? err.message : JSON.stringify(err.message);
+        }
+      } catch {
+        // non-JSON error body
+      }
+      throw new FavCRMError(response.status, message, code);
+    }
+
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const json = await response.json();
+    // Unwrap { success: true, data: T } envelope
+    if (json && typeof json === 'object' && 'success' in json && json.data !== undefined) {
+      return json.data as T;
+    }
+    return json as T;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sub-clients
+// ---------------------------------------------------------------------------
+
+export interface ProductListParams {
+  category_slug?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+class ShopClient {
+  constructor(private sdk: FavCRM) {}
+
+  listProducts(params?: ProductListParams): Promise<ProductListItem[]> {
+    const p: Record<string, string> = {};
+    if (params?.category_slug) p.category_slug = params.category_slug;
+    if (params?.search) p.search = params.search;
+    if (params?.page) p.page = String(params.page);
+    if (params?.limit) p.limit = String(params.limit);
+    return this.sdk.request('GET', '/shop/products', { params: p });
+  }
+
+  getProduct(slug: string): Promise<Product> {
+    return this.sdk.request('GET', `/shop/products/${slug}`);
+  }
+
+  listCategories(): Promise<ShopCategory[]> {
+    return this.sdk.request('GET', '/shop/categories');
+  }
+
+  listShippingMethods(orderAmount?: number): Promise<ShippingMethod[]> {
+    const p: Record<string, string> = {};
+    if (orderAmount !== undefined) p.order_amount = String(orderAmount);
+    return this.sdk.request('GET', '/shop/shipping-methods', { params: p });
+  }
+
+  listPaymentMethods(): Promise<PaymentMethodOption[]> {
+    return this.sdk.request('GET', '/shop/payment-methods');
+  }
+
+  createOrder(data: CreateOrderRequest): Promise<ShopOrder> {
+    return this.sdk.request('POST', '/shop/orders', { body: data });
+  }
+
+  listOrders(): Promise<ShopOrder[]> {
+    return this.sdk.request('GET', '/shop/orders');
+  }
+
+  getOrder(orderUuid: string): Promise<ShopOrder> {
+    return this.sdk.request('GET', `/shop/orders/${orderUuid}`);
+  }
+}
+
+export interface TimeSlotsParams {
+  date: string;
+  createQuotes?: boolean;
+  accountId?: string;
+  staffId?: string;
+}
+
+export interface TimeSlotsResponse {
+  slots: TimeSlot[];
+  bookingConfig?: BookingConfig;
+}
+
+export interface StaffMember {
+  id: number;
+  name: string;
+  avatar?: string;
+}
+
+class BookingsClient {
+  constructor(private sdk: FavCRM) {}
+
+  listServices(): Promise<BookingService[]> {
+    return this.sdk.request('GET', '/services');
+  }
+
+  getService(serviceId: string): Promise<BookingService> {
+    return this.sdk.request('GET', `/services/${serviceId}`);
+  }
+
+  getStaff(serviceId: string): Promise<StaffMember[]> {
+    return this.sdk.request('GET', `/services/${serviceId}/staff`);
+  }
+
+  getTimeSlots(serviceId: string, params: TimeSlotsParams): Promise<TimeSlotsResponse> {
+    const p: Record<string, string> = { date: params.date };
+    if (params.createQuotes != null) p.createQuotes = String(params.createQuotes);
+    if (params.accountId) p.accountId = params.accountId;
+    if (params.staffId) p.staffId = params.staffId;
+    return this.sdk.request('GET', `/services/${serviceId}/slots`, { params: p });
+  }
+
+  create(data: unknown): Promise<Booking> {
+    return this.sdk.request('POST', '/bookings', { body: data });
+  }
+
+  createGuest(data: unknown): Promise<Booking> {
+    return this.sdk.request('POST', '/bookings/guest', { body: data });
+  }
+
+  list(params?: Record<string, string>): Promise<Booking[]> {
+    return this.sdk.request('GET', '/bookings', { params });
+  }
+
+  get(bookingId: string): Promise<BookingDetail> {
+    return this.sdk.request('GET', `/bookings/${bookingId}`);
+  }
+}
+
+class EventsClient {
+  constructor(private sdk: FavCRM) {}
+
+  list(): Promise<ApiEvent[]> {
+    return this.sdk.request('GET', '/events');
+  }
+
+  get(slug: string): Promise<ApiEvent> {
+    return this.sdk.request('GET', `/events/${slug}`);
+  }
+
+  register(data: EventRegistrationSubmission): Promise<EventRegistrationResult> {
+    return this.sdk.request('POST', '/event-registrations', { body: data });
+  }
+
+  listRegistrations(): Promise<EventRegistration[]> {
+    return this.sdk.request('GET', '/event-registrations');
+  }
+}
+
+class MembersClient {
+  constructor(private sdk: FavCRM) {}
+
+  getProfile(): Promise<Member> {
+    return this.sdk.request('GET', '/profile');
+  }
+
+  updateProfile(data: Partial<Member>): Promise<Member> {
+    return this.sdk.request('PATCH', '/profile', { body: data });
+  }
+
+  getCardSettings(): Promise<CardSettings> {
+    return this.sdk.request('GET', '/card-settings');
+  }
+
+  listPaymentMethods(): Promise<PaymentMethod[]> {
+    return this.sdk.request('GET', '/payment-methods');
+  }
+}
+
+export interface PaymentGateway {
+  publishableKey: string;
+  gateway: string;
+}
+
+export interface PaymentIntentRequest {
+  amount: number;
+  currency: string;
+  bookingId?: string;
+}
+
+export interface PaymentIntentResponse {
+  clientSecret: string;
+  paymentIntentId: string;
+}
+
+class PaymentsClient {
+  constructor(private sdk: FavCRM) {}
+
+  getGateway(): Promise<PaymentGateway> {
+    return this.sdk.request('GET', '/payment-gateway');
+  }
+
+  createIntent(data: PaymentIntentRequest): Promise<PaymentIntentResponse> {
+    return this.sdk.request('POST', '/payment-intents', { body: data });
+  }
+}
+
+class PromotionsClient {
+  constructor(private sdk: FavCRM) {}
+
+  validate(data: PromotionValidationRequest): Promise<PromotionValidationResponse> {
+    return this.sdk.request('POST', '/validate-promotion', { body: data });
+  }
+}
