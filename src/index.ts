@@ -89,6 +89,12 @@ export type {
   ContactEnquiryResult,
 } from './types/contact.js';
 
+// Types — CMS
+export type {
+  CmsBlock,
+  CmsPage,
+} from './types/cms.js';
+
 // Types — Portal
 export type {
   CouponClaimSubmission,

@@ -12,6 +12,7 @@ import type { BookingService, TimeSlot, Booking, BookingDetail, BookingConfig } 
 import type { Member, CardSettings, PaymentMethod } from './types/member.js';
 import type { PromotionValidationRequest, PromotionValidationResponse } from './types/promotion.js';
 import type { Invoice, InvoiceDetail } from './types/invoice.js';
+import type { CmsPage } from './types/cms.js';
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -68,6 +69,7 @@ export class FavCRM {
   readonly payments: PaymentsClient;
   readonly promotions: PromotionsClient;
   readonly invoices: InvoicesClient;
+  readonly cms: CmsClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -78,6 +80,7 @@ export class FavCRM {
     this.payments = new PaymentsClient(this);
     this.promotions = new PromotionsClient(this);
     this.invoices = new InvoicesClient(this);
+    this.cms = new CmsClient(this);
   }
 
   get companyId(): string {
@@ -367,5 +370,17 @@ class InvoicesClient {
 
   get(id: string): Promise<InvoiceDetail> {
     return this.sdk.request('GET', `/invoices/${id}`);
+  }
+}
+
+class CmsClient {
+  constructor(private sdk: FavCRM) {}
+
+  listPages(): Promise<CmsPage[]> {
+    return this.sdk.request('GET', '/cms/pages');
+  }
+
+  getPage(slug: string): Promise<CmsPage> {
+    return this.sdk.request('GET', `/cms/pages/${slug}`);
   }
 }
