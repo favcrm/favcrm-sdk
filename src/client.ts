@@ -279,10 +279,17 @@ class BookingsClient {
       { params: p },
     );
 
+    let slots = Array.isArray(res) ? res : res?.slots || [];
+    slots = slots.map((slot: any) => ({
+      ...slot,
+      available: slot.available ?? slot.status === "available",
+      remainingCapacity: slot.remainingCapacity ?? slot.availableCapacity ?? 0,
+    }));
+
     if (Array.isArray(res)) {
-      return { slots: res };
+      return { slots: slots };
     }
-    return res as TimeSlotsResponse;
+    return { ...res, slots } as TimeSlotsResponse;
   }
 
   create(data: unknown): Promise<Booking> {
