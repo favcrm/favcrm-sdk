@@ -156,6 +156,7 @@ export type {
   PaymentGateway,
   PaymentIntentRequest,
   PaymentIntentResponse,
+  BlogListParams,
 } from './client.js';
 
 // Validation

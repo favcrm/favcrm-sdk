@@ -27,6 +27,7 @@ import type {
 } from "./types/promotion.js";
 import type { Invoice, InvoiceDetail } from "./types/invoice.js";
 import type { CmsPage } from "./types/cms.js";
+import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -84,6 +85,7 @@ export class FavCRM {
   readonly promotions: PromotionsClient;
   readonly invoices: InvoicesClient;
   readonly cms: CmsClient;
+  readonly blog: BlogClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -95,6 +97,7 @@ export class FavCRM {
     this.promotions = new PromotionsClient(this);
     this.invoices = new InvoicesClient(this);
     this.cms = new CmsClient(this);
+    this.blog = new BlogClient(this);
   }
 
   get companyId(): string {
@@ -437,5 +440,31 @@ class CmsClient {
 
   getPage(slug: string): Promise<CmsPage> {
     return this.sdk.request("GET", `/cms/pages/${slug}`);
+  }
+}
+
+export interface BlogListParams {
+  category?: string;
+  tag?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+class BlogClient {
+  constructor(private sdk: FavCRM) {}
+
+  list(params?: BlogListParams): Promise<BlogPostListItem[]> {
+    const p: Record<string, string> = {};
+    if (params?.category) p.category = params.category;
+    if (params?.tag) p.tag = params.tag;
+    if (params?.search) p.search = params.search;
+    if (params?.page) p.page = String(params.page);
+    if (params?.limit) p.limit = String(params.limit);
+    return this.sdk.request("GET", "/blog/posts", { params: p });
+  }
+
+  getBySlug(slug: string): Promise<BlogPost> {
+    return this.sdk.request("GET", `/blog/posts/${slug}`);
   }
 }
