@@ -445,19 +445,29 @@ class CmsClient {
 
 export interface BlogListParams {
   category?: string;
-  tag?: string;
   search?: string;
   page?: number;
   limit?: number;
 }
 
+export interface PaginatedResult<T> {
+  items: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
 class BlogClient {
   constructor(private sdk: FavCRM) {}
 
-  list(params?: BlogListParams): Promise<BlogPostListItem[]> {
+  list(params?: BlogListParams): Promise<PaginatedResult<BlogPostListItem>> {
     const p: Record<string, string> = {};
     if (params?.category) p.category = params.category;
-    if (params?.tag) p.tag = params.tag;
     if (params?.search) p.search = params.search;
     if (params?.page) p.page = String(params.page);
     if (params?.limit) p.limit = String(params.limit);

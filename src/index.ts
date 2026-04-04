@@ -76,9 +76,7 @@ export type {
 
 // Types — Blog
 export type {
-  BlogAuthor,
   BlogCategory,
-  BlogTag,
   BlogPostListItem,
   BlogPost,
 } from './types/blog.js';
@@ -157,6 +155,7 @@ export type {
   PaymentIntentRequest,
   PaymentIntentResponse,
   BlogListParams,
+  PaginatedResult,
 } from './client.js';
 
 // Validation
