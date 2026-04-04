@@ -461,10 +461,10 @@ class BlogClient {
     if (params?.search) p.search = params.search;
     if (params?.page) p.page = String(params.page);
     if (params?.limit) p.limit = String(params.limit);
-    return this.sdk.request("GET", "/blog/posts", { params: p });
+    return this.sdk.request("GET", "/cms/posts", { params: p });
   }
 
   getBySlug(slug: string): Promise<BlogPost> {
-    return this.sdk.request("GET", `/blog/posts/${slug}`);
+    return this.sdk.request("GET", `/cms/posts/${slug}`);
   }
 }
