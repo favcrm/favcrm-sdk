@@ -40,13 +40,14 @@ export function filterProducts<T extends Pick<ProductListItem, 'name' | 'descrip
   return products.filter((p) => matchesNormalized(p, normalised));
 }
 
-export function filterProductsByCategory<T extends Pick<ProductListItem, 'categories'>>(
+export function filterProductsByCategory<T extends Pick<ProductListItem, 'categories' | 'categorySlug'>>(
   products: T[],
   categorySlug: string,
 ): T[] {
   if (!categorySlug) return products;
   return products.filter((p) =>
-    p.categories?.some((c) => c.slug === categorySlug) ?? false,
+    p.categorySlug === categorySlug ||
+    (p.categories?.some((c) => c.slug === categorySlug) ?? false),
   );
 }
 
@@ -126,6 +127,7 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
     status: product.status,
     productType: product.productType,
     categoryName: product.categoryName,
+    categorySlug: product.categories?.[0]?.slug ?? null,
     categories: product.categories,
     isVariable: product.isVariable,
     image: product.images.length > 0 ? product.images[0].src : null,

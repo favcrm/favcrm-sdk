@@ -188,6 +188,7 @@ export class FavCRM {
 export interface ProductListParams {
   category_slug?: string;
   search?: string;
+  sort?: 'name' | 'price_asc' | 'price_desc' | 'newest';
   page?: number;
   limit?: number;
 }
@@ -199,6 +200,7 @@ class ShopClient {
     const p: Record<string, string> = {};
     if (params?.category_slug) p.category_slug = params.category_slug;
     if (params?.search) p.search = params.search;
+    if (params?.sort) p.sort = params.sort;
     if (params?.page) p.page = String(params.page);
     if (params?.limit) p.limit = String(params.limit);
     return this.sdk.request("GET", "/shop/products", { params: p });
