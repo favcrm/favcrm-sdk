@@ -15,8 +15,9 @@ export function calculateFinalTotal(
   cartTotal: number,
   discountAmount: number,
   shippingCost: number,
+  creditsApplied: number = 0,
 ): number {
-  return Math.max(cartTotal - discountAmount + shippingCost, 0);
+  return Math.max(cartTotal - discountAmount + shippingCost - creditsApplied, 0);
 }
 
 export function validateCheckoutForm(
@@ -35,6 +36,7 @@ export function validateCheckoutForm(
 
 export interface PaymentOptions {
   paymentMethodId?: string;
+  creditsUsed?: string;
   successUrl?: string;
   cancelUrl?: string;
 }
@@ -67,6 +69,7 @@ export function buildCreateOrderRequest(
     shippingMethodId: shippingMethodId ?? undefined,
     promotionCode,
     ...(payment?.paymentMethodId != null && { paymentMethodId: payment.paymentMethodId }),
+    ...(payment?.creditsUsed != null && { creditsUsed: payment.creditsUsed }),
     ...(payment?.successUrl != null && { successUrl: payment.successUrl }),
     ...(payment?.cancelUrl != null && { cancelUrl: payment.cancelUrl }),
   };

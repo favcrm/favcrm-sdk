@@ -77,6 +77,7 @@ export interface EventRegistrationSubmission {
   sessionId?: string;
   data?: Record<string, unknown>;
   promotionCode?: string;
+  creditsUsed?: string;
 }
 
 export interface EventRegistrationResult {

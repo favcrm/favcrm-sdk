@@ -140,6 +140,7 @@ export interface CreateOrderRequest {
   };
   shippingMethodId?: number;
   promotionCode?: string;
+  creditsUsed?: string;
   paymentMethodId?: string;
   successUrl?: string;
   cancelUrl?: string;

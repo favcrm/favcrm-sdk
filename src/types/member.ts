@@ -20,6 +20,7 @@ export interface Member {
   code: string | null;
   points: number;
   stamps: number;
+  credits: number;
   membershipTier: MembershipTier | null;
 }
 
@@ -53,6 +54,7 @@ export interface ApiMember {
   email: string | null;
   points: number;
   stamps: number;
+  credits?: string;
   uuid: string;
   agreeToReceivePromotion: boolean;
   expiryDate: string | null;

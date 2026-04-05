@@ -11,6 +11,7 @@ export function mapApiMember(api: ApiMember): Member {
     code: api.code ?? null,
     points: api.points ?? 0,
     stamps: api.stamps ?? 0,
+    credits: parseFloat(api.credits ?? '0'),
     membershipTier: api.membershipTier
       ? {
           id: String(api.membershipTier.id),
