@@ -94,6 +94,7 @@ export interface ProductListItem {
   productType: string;
   stockStatus: string;
   categoryName: string | null;
+  categorySlug: string | null;
   categories: CategoryRef[];
   isVariable: boolean;
   image: string | null;
@@ -110,6 +111,9 @@ export interface ShopCategory {
   id: number;
   name: string;
   slug: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  parentId: number | null;
   productCount: number;
 }
 
