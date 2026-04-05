@@ -208,6 +208,15 @@ class ShopClient {
     return this.sdk.request("GET", `/shop/products/${slug}`);
   }
 
+  getRelatedProducts(
+    slug: string,
+    limit: number = 4,
+  ): Promise<ProductListItem[]> {
+    return this.sdk.request("GET", `/shop/products/${slug}/related`, {
+      params: { limit: String(limit) },
+    });
+  }
+
   listCategories(): Promise<ShopCategory[]> {
     return this.sdk.request("GET", "/shop/categories");
   }
@@ -406,6 +415,10 @@ class PaymentsClient {
 
   createIntent(data: PaymentIntentRequest): Promise<PaymentIntentResponse> {
     return this.sdk.request("POST", "/payment-intents", { body: data });
+  }
+
+  getCreditBalance(): Promise<{ credits: string; currency: string }> {
+    return this.sdk.request("GET", "/credit-balance");
   }
 }
 

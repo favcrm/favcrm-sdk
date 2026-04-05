@@ -129,6 +129,7 @@ export {
   isSubscriptionProduct,
   formatSubscriptionPrice,
   getMonthlyEquivalent,
+  getRelatedProducts,
 } from './shop.js';
 export type { SearchMatchSegment } from './shop.js';
 

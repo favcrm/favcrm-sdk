@@ -117,41 +117,36 @@ export function getPrimaryImage(product: Pick<Product, 'images'>): ProductImage 
 }
 
 export function toCartProduct(product: Product, variation?: ProductVariation): ProductListItem {
-  if (variation) {
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description ?? '',
-      slug: product.slug,
-      price: variation.price,
-      discountPrice: variation.discountPrice,
-      memberPrice: variation.memberPrice,
-      seoTitle: product.seoTitle,
-      status: product.status,
-      productType: product.productType,
-      stockStatus: variation.stockStatus,
-      categoryName: product.categoryName,
-      categories: product.categories,
-      isVariable: product.isVariable,
-      image: product.images.length > 0 ? product.images[0].src : null,
-    };
-  }
-  return {
+  const base = {
     id: product.id,
     name: product.name,
     description: product.description ?? '',
     slug: product.slug,
-    price: product.price,
-    discountPrice: product.discountPrice,
-    memberPrice: product.memberPrice,
     seoTitle: product.seoTitle,
     status: product.status,
     productType: product.productType,
-    stockStatus: product.stockStatus,
     categoryName: product.categoryName,
     categories: product.categories,
     isVariable: product.isVariable,
     image: product.images.length > 0 ? product.images[0].src : null,
+  };
+
+  if (variation) {
+    return {
+      ...base,
+      price: variation.price,
+      discountPrice: variation.discountPrice,
+      memberPrice: variation.memberPrice,
+      stockStatus: variation.stockStatus,
+    };
+  }
+
+  return {
+    ...base,
+    price: product.price,
+    discountPrice: product.discountPrice,
+    memberPrice: product.memberPrice,
+    stockStatus: product.stockStatus,
   };
 }
 
@@ -196,4 +191,36 @@ export function formatSubscriptionPrice(
 
 export function getMonthlyEquivalent(plan: { price: number; billingCycle: string }): number {
   return plan.billingCycle === 'yearly' ? Math.round((plan.price / 12) * 100) / 100 : plan.price;
+}
+
+// ---------------------------------------------------------------------------
+// Related products (client-side heuristic — swap for API call when available)
+// ---------------------------------------------------------------------------
+
+export function getRelatedProducts<
+  T extends Pick<ProductListItem, 'id' | 'categories' | 'price'>,
+>(
+  current: Pick<Product, 'id' | 'categories' | 'price'>,
+  products: T[],
+  limit: number = 4,
+): T[] {
+  const others = products.filter((p) => p.id !== current.id);
+  if (others.length === 0) return [];
+
+  const currentPrice = current.price ?? 0;
+  const currentCatIds = new Set(current.categories.map((c) => c.id));
+
+  const scored = others.map((p) => {
+    let score = 0;
+    if (p.categories.some((c) => currentCatIds.has(c.id))) score += 2;
+    const pPrice = p.price ?? 0;
+    if (currentPrice > 0 && pPrice > 0) {
+      const ratio = pPrice / currentPrice;
+      if (ratio >= 0.5 && ratio <= 1.5) score += 1;
+    }
+    return { product: p, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, limit).map((s) => s.product);
 }

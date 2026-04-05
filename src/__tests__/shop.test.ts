@@ -14,6 +14,7 @@ import {
   filterProducts,
   filterProductsByCategory,
   highlightSearchMatch,
+  getRelatedProducts,
 } from '../shop.js';
 import type { Product, ProductImage, ProductVariation } from '../types/shop.js';
 
@@ -411,5 +412,71 @@ describe('getVariationLabel', () => {
   it('joins option values', () => {
     const variation = makeVariation();
     expect(getVariationLabel(variation)).toBe('Small / Red');
+  });
+});
+
+describe('getRelatedProducts', () => {
+  const catA = { id: 1, name: 'Abalone', slug: 'abalone' };
+  const catB = { id: 2, name: 'Soup', slug: 'soup' };
+
+  const current = { id: 100, categories: [catA], price: 200 };
+
+  const products = [
+    { id: 1, categories: [catA], price: 180, name: 'Same cat, close price' },
+    { id: 2, categories: [catA], price: 500, name: 'Same cat, far price' },
+    { id: 3, categories: [catB], price: 190, name: 'Diff cat, close price' },
+    { id: 4, categories: [catB], price: 800, name: 'Diff cat, far price' },
+    { id: 5, categories: [catA, catB], price: 210, name: 'Both cats, close price' },
+  ];
+
+  it('ranks same-category products first', () => {
+    const result = getRelatedProducts(current, products, 4);
+    expect(result[0].id).toBe(1); // same cat + close price = 3 pts
+    expect(result[1].id).toBe(5); // same cat + close price = 3 pts
+  });
+
+  it('excludes current product', () => {
+    const withSelf = [...products, { id: 100, categories: [catA], price: 200, name: 'Self' }];
+    const result = getRelatedProducts(current, withSelf);
+    expect(result.find((p) => p.id === 100)).toBeUndefined();
+  });
+
+  it('respects limit', () => {
+    expect(getRelatedProducts(current, products, 2)).toHaveLength(2);
+  });
+
+  it('returns empty for empty input', () => {
+    expect(getRelatedProducts(current, [])).toEqual([]);
+  });
+
+  it('returns empty when only current product exists', () => {
+    const only = [{ id: 100, categories: [catA], price: 200 }];
+    expect(getRelatedProducts(current, only)).toEqual([]);
+  });
+
+  it('handles products with no categories', () => {
+    const noCat = [{ id: 10, categories: [], price: 200 }];
+    const result = getRelatedProducts(current, noCat);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(10);
+  });
+
+  it('uses price proximity as tiebreaker', () => {
+    const sameCat = [
+      { id: 1, categories: [catA], price: 190 },  // cat match + price match = 3
+      { id: 2, categories: [catA], price: 900 },  // cat match only = 2
+    ];
+    const result = getRelatedProducts(current, sameCat);
+    expect(result[0].id).toBe(1);
+    expect(result[1].id).toBe(2);
+  });
+
+  it('defaults to limit of 4', () => {
+    const many = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      categories: [catA],
+      price: 200,
+    }));
+    expect(getRelatedProducts(current, many)).toHaveLength(4);
   });
 });
