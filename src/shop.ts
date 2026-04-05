@@ -46,7 +46,7 @@ export function filterProductsByCategory<T extends Pick<ProductListItem, 'catego
 ): T[] {
   if (!categorySlug) return products;
   return products.filter((p) =>
-    p.categories.some((c) => c.slug === categorySlug),
+    p.categories?.some((c) => c.slug === categorySlug) ?? false,
   );
 }
 
@@ -208,11 +208,11 @@ export function getRelatedProducts<
   if (others.length === 0) return [];
 
   const currentPrice = current.price ?? 0;
-  const currentCatIds = new Set(current.categories.map((c) => c.id));
+  const currentCatIds = new Set((current.categories ?? []).map((c) => c.id));
 
   const scored = others.map((p) => {
     let score = 0;
-    if (p.categories.some((c) => currentCatIds.has(c.id))) score += 2;
+    if (p.categories?.some((c) => currentCatIds.has(c.id))) score += 2;
     const pPrice = p.price ?? 0;
     if (currentPrice > 0 && pPrice > 0) {
       const ratio = pPrice / currentPrice;
