@@ -87,6 +87,14 @@ export type {
   ContactEnquiryResult,
 } from './types/contact.js';
 
+// Types — Review
+export type {
+  ProductReview,
+  ReviewSummary,
+  CreateReviewRequest,
+  ReviewContext,
+} from './types/review.js';
+
 // Types — CMS
 export type {
   CmsBlock,

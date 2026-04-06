@@ -1,3 +1,5 @@
+import type { ReviewSummary } from './review.js';
+
 export interface ProductImage {
   id: number;
   src: string;
@@ -79,6 +81,9 @@ export interface Product {
   options: ProductOption[];
   selectedOptions: { optionName: string; value: string }[];
   variations: ProductVariation[];
+  createdAt: string;
+  updatedAt: string;
+  reviewSummary?: ReviewSummary;
 }
 
 export interface ProductListItem {

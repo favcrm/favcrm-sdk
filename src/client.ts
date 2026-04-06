@@ -28,6 +28,7 @@ import type {
 import type { Invoice, InvoiceDetail } from "./types/invoice.js";
 import type { CmsPage } from "./types/cms.js";
 import type { BlogPost, BlogPostListItem } from "./types/blog.js";
+import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -243,6 +244,18 @@ class ShopClient {
 
   getOrder(orderUuid: string): Promise<ShopOrder> {
     return this.sdk.request("GET", `/shop/orders/${orderUuid}`);
+  }
+
+  listProductReviews(slug: string): Promise<{ reviews: ProductReview[]; summary: ReviewSummary }> {
+    return this.sdk.request("GET", `/shop/products/${slug}/reviews`);
+  }
+
+  getReviewContext(token: string): Promise<ReviewContext> {
+    return this.sdk.request("GET", `/shop/reviews/context/${token}`);
+  }
+
+  submitProductReview(data: CreateReviewRequest): Promise<ProductReview> {
+    return this.sdk.request("POST", "/shop/reviews/submit", { body: data });
   }
 }
 
