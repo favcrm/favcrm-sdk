@@ -23,21 +23,28 @@ describe('calculateFinalTotal', () => {
 describe('validateCheckoutForm', () => {
   it('returns null when all required fields present', () => {
     expect(validateCheckoutForm({
-      firstName: 'John', lastName: 'Doe',
+      firstName: 'John', lastName: 'Doe', email: 'john@test.com',
       addressLine1: '123 St', city: 'HK',
     })).toBeNull();
   });
 
   it('returns error key when firstName missing', () => {
     expect(validateCheckoutForm({
-      firstName: '', lastName: 'Doe',
+      firstName: '', lastName: 'Doe', email: 'john@test.com',
+      addressLine1: '123 St', city: 'HK',
+    })).toBe('REQUIRED_FIELDS_MISSING');
+  });
+
+  it('returns error key when email missing', () => {
+    expect(validateCheckoutForm({
+      firstName: 'John', lastName: 'Doe', email: '',
       addressLine1: '123 St', city: 'HK',
     })).toBe('REQUIRED_FIELDS_MISSING');
   });
 
   it('returns error key when city is whitespace only', () => {
     expect(validateCheckoutForm({
-      firstName: 'John', lastName: 'Doe',
+      firstName: 'John', lastName: 'Doe', email: 'john@test.com',
       addressLine1: '123 St', city: '   ',
     })).toBe('REQUIRED_FIELDS_MISSING');
   });

@@ -21,11 +21,12 @@ export function calculateFinalTotal(
 }
 
 export function validateCheckoutForm(
-  fields: Pick<CheckoutFormFields, 'firstName' | 'lastName' | 'addressLine1' | 'city'>,
+  fields: Pick<CheckoutFormFields, 'firstName' | 'lastName' | 'email' | 'addressLine1' | 'city'>,
 ): string | null {
   if (
     !fields.firstName.trim() ||
     !fields.lastName.trim() ||
+    !fields.email.trim() ||
     !fields.addressLine1.trim() ||
     !fields.city.trim()
   ) {
