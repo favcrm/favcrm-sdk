@@ -71,8 +71,6 @@ export interface Product {
   productType: string;
   stockQuantity: number;
   stockStatus: string;
-  categoryId: number | null;
-  categoryName: string | null;
   categories: CategoryRef[];
   isVariable: boolean;
   isVariation: boolean;

@@ -126,7 +126,7 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
     seoTitle: product.seoTitle,
     status: product.status,
     productType: product.productType,
-    categoryName: product.categoryName,
+    categoryName: product.categories?.[0]?.name ?? null,
     categorySlug: product.categories?.[0]?.slug ?? null,
     categories: product.categories,
     isVariable: product.isVariable,
