@@ -11,6 +11,19 @@ export interface MembershipTier {
   };
 }
 
+export interface PublicMembershipTier {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  validPeriodValue: number;
+  validPeriodUnit: 'MONTHS' | 'YEARS';
+  discount: number;
+  benefits: string[];
+  isPopular: boolean;
+  sortOrder: number;
+}
+
 export interface Member {
   uuid: string;
   name: string;

@@ -21,7 +21,7 @@ import type {
   BookingConfig,
   ResourceItem,
 } from "./types/booking.js";
-import type { Member, CardSettings, PaymentMethod } from "./types/member.js";
+import type { Member, CardSettings, PaymentMethod, PublicMembershipTier } from "./types/member.js";
 import type {
   PromotionValidationRequest,
   PromotionValidationResponse,
@@ -90,6 +90,7 @@ export class FavCRM {
   readonly cms: CmsClient;
   readonly blog: BlogClient;
   readonly packages: PackagesClient;
+  readonly tiers: TiersClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -103,6 +104,7 @@ export class FavCRM {
     this.cms = new CmsClient(this);
     this.blog = new BlogClient(this);
     this.packages = new PackagesClient(this);
+    this.tiers = new TiersClient(this);
   }
 
   get companyId(): string {
@@ -412,6 +414,18 @@ class MembersClient {
 
   setDefaultPaymentMethod(methodId: string): Promise<void> {
     return this.sdk.request("POST", `/payment-methods/${methodId}/set-default`);
+  }
+
+  enroll(tierId: string): Promise<{ membershipId: string }> {
+    return this.sdk.request("POST", "/membership/enroll", { body: { tierId } });
+  }
+}
+
+class TiersClient {
+  constructor(private sdk: FavCRM) {}
+
+  list(): Promise<PublicMembershipTier[]> {
+    return this.sdk.request("GET", "/membership-tiers");
   }
 }
 

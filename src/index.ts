@@ -27,6 +27,7 @@ export type {
 // Types — Member
 export type {
   MembershipTier,
+  PublicMembershipTier,
   Member,
   ApiMembershipTier,
   ApiMember,
