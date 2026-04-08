@@ -334,8 +334,10 @@ class BookingsClient {
     return this.sdk.request("POST", "/bookings/guest", { body: data });
   }
 
-  list(params?: Record<string, string>): Promise<Booking[]> {
-    return this.sdk.request("GET", "/bookings", { params });
+  async list(params?: Record<string, string>): Promise<Booking[]> {
+    const res = await this.sdk.request<any>("GET", "/bookings", { params });
+    // API returns paginated { items, pagination } — extract the array
+    return Array.isArray(res) ? res : res?.items ?? [];
   }
 
   get(bookingId: string): Promise<BookingDetail> {
