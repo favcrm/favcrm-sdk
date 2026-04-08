@@ -64,6 +64,7 @@ export type {
   BookingStatusChange,
   TimeSlot,
   BookingConfig,
+  ResourceItem,
 } from './types/booking.js';
 
 // Types — Invoice

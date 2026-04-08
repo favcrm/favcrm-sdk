@@ -69,11 +69,18 @@ export interface TimeSlot {
   available: boolean;
   remainingCapacity: number;
   scheduleId?: string;
+  resourceId?: string | null;
   quoteId?: string;
   basePrice?: string;
   tierPrice?: string;
   tierName?: string | null;
   priceType?: string;
+}
+
+export interface ResourceItem {
+  resourceId: string;
+  resourceName: string;
+  resourceType: string;
 }
 
 export interface BookingConfig {

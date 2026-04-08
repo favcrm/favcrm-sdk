@@ -19,6 +19,7 @@ import type {
   Booking,
   BookingDetail,
   BookingConfig,
+  ResourceItem,
 } from "./types/booking.js";
 import type { Member, CardSettings, PaymentMethod } from "./types/member.js";
 import type {
@@ -264,6 +265,7 @@ export interface TimeSlotsParams {
   createQuotes?: boolean;
   accountId?: string;
   staffId?: string;
+  resourceId?: string;
 }
 
 export interface TimeSlotsResponse {
@@ -291,6 +293,10 @@ class BookingsClient {
     return this.sdk.request("GET", `/services/${serviceId}/staff`);
   }
 
+  getResources(serviceId: string): Promise<ResourceItem[]> {
+    return this.sdk.request("GET", `/services/${serviceId}/resources`);
+  }
+
   async getTimeSlots(
     serviceId: string,
     params: TimeSlotsParams,
@@ -300,6 +306,7 @@ class BookingsClient {
       p.createQuotes = String(params.createQuotes);
     if (params.accountId) p.accountId = params.accountId;
     if (params.staffId) p.staffId = params.staffId;
+    if (params.resourceId) p.resourceId = params.resourceId;
     const res = await this.sdk.request<any>(
       "GET",
       `/services/${serviceId}/slots`,
