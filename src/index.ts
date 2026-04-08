@@ -97,6 +97,11 @@ export type {
   ReviewContext,
 } from './types/review.js';
 
+// Types — Service Package
+export type {
+  ServicePackageOrder,
+} from './types/service-package.js';
+
 // Types — CMS
 export type {
   CmsBlock,

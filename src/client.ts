@@ -30,6 +30,7 @@ import type { Invoice, InvoiceDetail } from "./types/invoice.js";
 import type { CmsPage } from "./types/cms.js";
 import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
+import type { ServicePackageOrder } from "./types/service-package.js";
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -88,6 +89,7 @@ export class FavCRM {
   readonly invoices: InvoicesClient;
   readonly cms: CmsClient;
   readonly blog: BlogClient;
+  readonly packages: PackagesClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -100,6 +102,7 @@ export class FavCRM {
     this.invoices = new InvoicesClient(this);
     this.cms = new CmsClient(this);
     this.blog = new BlogClient(this);
+    this.packages = new PackagesClient(this);
   }
 
   get companyId(): string {
@@ -498,6 +501,20 @@ export interface PaginatedResult<T> {
     hasNext: boolean;
     hasPrev: boolean;
   };
+}
+
+class PackagesClient {
+  constructor(private sdk: FavCRM) {}
+
+  listMyOrders(): Promise<ServicePackageOrder[]> {
+    return this.sdk.request("GET", "/service-package-orders");
+  }
+
+  getApplicable(serviceId: string): Promise<ServicePackageOrder[]> {
+    return this.sdk.request("GET", "/service-package-orders/applicable", {
+      params: { serviceId },
+    });
+  }
 }
 
 class BlogClient {
