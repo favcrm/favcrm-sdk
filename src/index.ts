@@ -107,6 +107,7 @@ export type {
   CouponClaimResult,
   PortalConfig,
   FeatureKey,
+  AnalyticsConfig,
 } from './types/portal.js';
 
 // Modules logic

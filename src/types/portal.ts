@@ -1,3 +1,9 @@
+export interface AnalyticsConfig {
+  gtmId: string | null;
+  ga4Id: string | null;
+  metaPixelId: string | null;
+}
+
 export interface CouponClaimSubmission {
   name: string;
   email?: string;
