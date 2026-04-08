@@ -62,6 +62,7 @@ export type {
   BookingDetail,
   BookingLineItem,
   BookingStatusChange,
+  ServiceAddon,
   TimeSlot,
   BookingConfig,
   ResourceItem,

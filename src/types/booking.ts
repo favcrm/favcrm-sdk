@@ -1,3 +1,12 @@
+export interface ServiceAddon {
+  id: string;
+  name: string;
+  description: string | null;
+  price: string;
+  durationMinutes: number;
+  productImageUrl: string | null;
+}
+
 export interface BookingService {
   id: string;
   name: string;
@@ -16,6 +25,7 @@ export interface BookingService {
   advanceBookingDays: number | null;
   categoryId: string | null;
   categoryName: string | null;
+  addons?: ServiceAddon[];
 }
 
 export type BookingStatus = "draft" | "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
