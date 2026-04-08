@@ -471,8 +471,9 @@ class InvoicesClient {
 class CmsClient {
   constructor(private sdk: FavCRM) {}
 
-  listPages(): Promise<CmsPage[]> {
-    return this.sdk.request("GET", "/cms/pages");
+  async listPages(): Promise<CmsPage[]> {
+    const res = await this.sdk.request<any>("GET", "/cms/pages");
+    return Array.isArray(res) ? res : res?.items ?? [];
   }
 
   getPage(slug: string): Promise<CmsPage> {
