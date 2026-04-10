@@ -31,6 +31,7 @@ import type { CmsPage } from "./types/cms.js";
 import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
 import type { ServicePackageOrder } from "./types/service-package.js";
+import type { ContactEnquirySubmission, ContactEnquiryResult } from "./types/contact.js";
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -91,6 +92,7 @@ export class FavCRM {
   readonly blog: BlogClient;
   readonly packages: PackagesClient;
   readonly tiers: TiersClient;
+  readonly contact: ContactClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -105,6 +107,7 @@ export class FavCRM {
     this.blog = new BlogClient(this);
     this.packages = new PackagesClient(this);
     this.tiers = new TiersClient(this);
+    this.contact = new ContactClient(this);
   }
 
   get companyId(): string {
@@ -545,5 +548,13 @@ class BlogClient {
 
   getBySlug(slug: string): Promise<BlogPost> {
     return this.sdk.request("GET", `/cms/posts/${slug}`);
+  }
+}
+
+class ContactClient {
+  constructor(private sdk: FavCRM) {}
+
+  submit(data: ContactEnquirySubmission): Promise<ContactEnquiryResult> {
+    return this.sdk.request("POST", "/contact", { body: data });
   }
 }

@@ -415,4 +415,39 @@ describe('FavCRM Client', () => {
       expect(fetch.mock.calls[0][0]).toContain('/invoices/inv-1');
     });
   });
+
+  describe('contact', () => {
+    it('submit sends POST to /contact', async () => {
+      const fetch = mockFetch(envelope({ conversationId: 'conv-1', messageId: 'msg-1' }));
+      vi.stubGlobal('fetch', fetch);
+      const result = await sdk.contact.submit({
+        name: 'Test User',
+        email: 'test@example.com',
+        phone: '+85291234567',
+        subject: 'Fingerprint Analysis Lead',
+        message: 'Personality type: Wednesday',
+      });
+      expect(fetch.mock.calls[0][0]).toContain('/contact');
+      expect(fetch.mock.calls[0][1].method).toBe('POST');
+      const body = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(body.name).toBe('Test User');
+      expect(body.email).toBe('test@example.com');
+      expect(body.phone).toBe('+85291234567');
+      expect(body.message).toContain('Wednesday');
+      expect(result).toEqual({ conversationId: 'conv-1', messageId: 'msg-1' });
+    });
+
+    it('submit works without optional fields', async () => {
+      const fetch = mockFetch(envelope({ conversationId: 'conv-2', messageId: 'msg-2' }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.contact.submit({
+        name: 'Minimal',
+        email: 'min@test.com',
+        message: 'Hello',
+      });
+      const body = JSON.parse(fetch.mock.calls[0][1].body);
+      expect(body.phone).toBeUndefined();
+      expect(body.subject).toBeUndefined();
+    });
+  });
 });
