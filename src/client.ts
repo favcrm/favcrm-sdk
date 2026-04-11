@@ -422,6 +422,15 @@ class MembersClient {
   enroll(tierId: string): Promise<{ membershipId: string }> {
     return this.sdk.request("POST", "/membership/enroll", { body: { tierId } });
   }
+
+  enrollPaid(
+    tierId: string,
+    paymentIntentId: string,
+  ): Promise<{ membershipId: string }> {
+    return this.sdk.request("POST", "/membership/enroll-paid", {
+      body: { tierId, paymentIntentId },
+    });
+  }
 }
 
 class TiersClient {
@@ -441,6 +450,7 @@ export interface PaymentIntentRequest {
   amount: number;
   currency: string;
   bookingId?: string;
+  tierId?: string;
 }
 
 export interface PaymentIntentResponse {
