@@ -15,6 +15,7 @@ export interface BookingService {
   durationMinutes: number;
   capacity: number;
   price: string;
+  displayPrice: string | null;
   currency: string;
   coverImage: string | null;
   requiresStaff: boolean;
