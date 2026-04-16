@@ -1,4 +1,4 @@
-import type { ReviewSummary } from './review.js';
+import type { ReviewSummary } from "./review.js";
 
 export interface ProductImage {
   id: number;
@@ -123,10 +123,10 @@ export interface ShopCategory {
 export interface ShippingMethod {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
   cost: number;
-  calculationType: string;
   freeShippingThreshold: number | null;
+  estimatedDays: string | null;
 }
 
 export interface CreateOrderRequest {
