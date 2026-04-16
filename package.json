@@ -1,6 +1,6 @@
 {
   "name": "@favcrm/sdk",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "description": "FavCRM SDK - Shared business logic for shop, checkout, and promotions",
   "type": "module",
   "main": "./dist/index.js",
