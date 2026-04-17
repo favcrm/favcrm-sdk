@@ -32,6 +32,7 @@ import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
 import type { ServicePackageOrder } from "./types/service-package.js";
 import type { ContactEnquirySubmission, ContactEnquiryResult } from "./types/contact.js";
+import { AuthClient } from "./auth.js";
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -93,9 +94,11 @@ export class FavCRM {
   readonly packages: PackagesClient;
   readonly tiers: TiersClient;
   readonly contact: ContactClient;
+  readonly auth: AuthClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
+    this.auth = new AuthClient(this);
     this.shop = new ShopClient(this);
     this.bookings = new BookingsClient(this);
     this.events = new EventsClient(this);

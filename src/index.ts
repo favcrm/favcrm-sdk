@@ -161,6 +161,14 @@ export type { CheckoutFormFields, PaymentOptions } from './checkout.js';
 // Coupon logic
 export { buildAppliedCoupon, getCouponErrorMessage } from './coupon.js';
 
+// Auth
+export { AuthClient } from './auth.js';
+export type {
+  OtpSendResponse,
+  AuthTokenResponse,
+  RegisterInput,
+} from './types/auth.js';
+
 // API Client
 export { FavCRM, FavCRMError } from './client.js';
 export type {
