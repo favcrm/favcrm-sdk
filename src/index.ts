@@ -155,8 +155,10 @@ export {
   calculateFinalTotal,
   validateCheckoutForm,
   buildCreateOrderRequest,
+  computeShippingEligibility,
+  pickDefaultShippingId,
 } from './checkout.js';
-export type { CheckoutFormFields, PaymentOptions } from './checkout.js';
+export type { CheckoutFormFields, PaymentOptions, ShippingEligibility } from './checkout.js';
 
 // Coupon logic
 export { buildAppliedCoupon, getCouponErrorMessage } from './coupon.js';

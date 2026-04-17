@@ -1,4 +1,4 @@
-import type { CartItem, CreateOrderRequest } from './types/shop.js';
+import type { CartItem, CreateOrderRequest, ShippingMethod } from './types/shop.js';
 
 export interface CheckoutFormFields {
   firstName: string;
@@ -33,6 +33,37 @@ export function validateCheckoutForm(
     return 'REQUIRED_FIELDS_MISSING';
   }
   return null;
+}
+
+export interface ShippingEligibility {
+  method: ShippingMethod;
+  meetsThreshold: boolean;
+  locked: boolean;
+  effectiveCost: number;
+  amountToUnlock: number;
+}
+
+export function computeShippingEligibility(
+  methods: ShippingMethod[],
+  cartTotal: number,
+): ShippingEligibility[] {
+  return methods.map((method) => {
+    const threshold = method.freeShippingThreshold;
+    const hasThreshold = threshold != null && threshold > 0;
+    const meetsThreshold = hasThreshold && cartTotal >= threshold;
+    const isFreeOnly = method.cost === 0 && hasThreshold;
+    const locked = isFreeOnly && !meetsThreshold;
+    const effectiveCost = meetsThreshold ? 0 : method.cost;
+    const amountToUnlock = hasThreshold && !meetsThreshold ? threshold - cartTotal : 0;
+    return { method, meetsThreshold, locked, effectiveCost, amountToUnlock };
+  });
+}
+
+export function pickDefaultShippingId(
+  eligibility: ShippingEligibility[],
+): number | null {
+  const unlocked = eligibility.find((e) => !e.locked);
+  return unlocked ? unlocked.method.id : null;
 }
 
 export interface PaymentOptions {

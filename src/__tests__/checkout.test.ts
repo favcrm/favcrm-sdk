@@ -3,8 +3,79 @@ import {
   calculateFinalTotal,
   validateCheckoutForm,
   buildCreateOrderRequest,
+  computeShippingEligibility,
+  pickDefaultShippingId,
 } from '../checkout.js';
-import type { CartItem } from '../types/shop.js';
+import type { CartItem, ShippingMethod } from '../types/shop.js';
+
+const makeMethod = (over: Partial<ShippingMethod> = {}): ShippingMethod => ({
+  id: 1,
+  name: 'Standard',
+  description: null,
+  cost: 50,
+  freeShippingThreshold: null,
+  ...over,
+});
+
+describe('computeShippingEligibility', () => {
+  it('returns cost as-is when no threshold', () => {
+    const r = computeShippingEligibility([makeMethod()], 10);
+    expect(r[0]).toMatchObject({ meetsThreshold: false, locked: false, effectiveCost: 50, amountToUnlock: 0 });
+  });
+
+  it('locks free-only method below threshold with unlock amount', () => {
+    const r = computeShippingEligibility(
+      [makeMethod({ id: 2, cost: 0, freeShippingThreshold: 500 })],
+      300,
+    );
+    expect(r[0]).toMatchObject({ meetsThreshold: false, locked: true, effectiveCost: 0, amountToUnlock: 200 });
+  });
+
+  it('unlocks free-only method when threshold met', () => {
+    const r = computeShippingEligibility(
+      [makeMethod({ id: 2, cost: 0, freeShippingThreshold: 500 })],
+      600,
+    );
+    expect(r[0]).toMatchObject({ meetsThreshold: true, locked: false, effectiveCost: 0, amountToUnlock: 0 });
+  });
+
+  it('waives paid cost when paid method has a threshold that is met', () => {
+    const r = computeShippingEligibility(
+      [makeMethod({ cost: 50, freeShippingThreshold: 500 })],
+      600,
+    );
+    expect(r[0]).toMatchObject({ meetsThreshold: true, locked: false, effectiveCost: 0 });
+  });
+
+  it('returns empty array for empty input', () => {
+    expect(computeShippingEligibility([], 100)).toEqual([]);
+  });
+});
+
+describe('pickDefaultShippingId', () => {
+  it('picks first unlocked method', () => {
+    const e = computeShippingEligibility(
+      [
+        makeMethod({ id: 1, cost: 0, freeShippingThreshold: 500 }),
+        makeMethod({ id: 2, cost: 50 }),
+      ],
+      100,
+    );
+    expect(pickDefaultShippingId(e)).toBe(2);
+  });
+
+  it('returns null when all locked', () => {
+    const e = computeShippingEligibility(
+      [makeMethod({ id: 1, cost: 0, freeShippingThreshold: 500 })],
+      100,
+    );
+    expect(pickDefaultShippingId(e)).toBeNull();
+  });
+
+  it('returns null for empty list', () => {
+    expect(pickDefaultShippingId([])).toBeNull();
+  });
+});
 
 describe('calculateFinalTotal', () => {
   it('calculates total correctly', () => {
