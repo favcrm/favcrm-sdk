@@ -16,13 +16,13 @@ export type {
   PaymentMethodOption,
   SubscriptionPlan,
   ProductSubscription,
-} from './types/shop.js';
+} from "./types/shop.js";
 
 export type {
   PromotionValidationRequest,
   PromotionValidationResponse,
   AppliedCoupon,
-} from './types/promotion.js';
+} from "./types/promotion.js";
 
 // Types — Member
 export type {
@@ -40,7 +40,7 @@ export type {
   ReferralLookupResult,
   RegistrationSubmission,
   RegistrationResult,
-} from './types/member.js';
+} from "./types/member.js";
 
 // Types — Event
 export type {
@@ -53,7 +53,7 @@ export type {
   EventRegistration,
   EventRegistrationSubmission,
   EventRegistrationResult,
-} from './types/event.js';
+} from "./types/event.js";
 
 // Types — Booking
 export type {
@@ -66,8 +66,9 @@ export type {
   ServiceAddon,
   TimeSlot,
   BookingConfig,
+  BookingSettings,
   ResourceItem,
-} from './types/booking.js';
+} from "./types/booking.js";
 
 // Types — Invoice
 export type {
@@ -75,20 +76,16 @@ export type {
   Invoice,
   InvoiceLineItem,
   InvoiceDetail,
-} from './types/invoice.js';
+} from "./types/invoice.js";
 
 // Types — Blog
-export type {
-  BlogCategory,
-  BlogPostListItem,
-  BlogPost,
-} from './types/blog.js';
+export type { BlogCategory, BlogPostListItem, BlogPost } from "./types/blog.js";
 
 // Types — Contact
 export type {
   ContactEnquirySubmission,
   ContactEnquiryResult,
-} from './types/contact.js';
+} from "./types/contact.js";
 
 // Types — Review
 export type {
@@ -96,18 +93,13 @@ export type {
   ReviewSummary,
   CreateReviewRequest,
   ReviewContext,
-} from './types/review.js';
+} from "./types/review.js";
 
 // Types — Service Package
-export type {
-  ServicePackageOrder,
-} from './types/service-package.js';
+export type { ServicePackageOrder } from "./types/service-package.js";
 
 // Types — CMS
-export type {
-  CmsBlock,
-  CmsPage,
-} from './types/cms.js';
+export type { CmsBlock, CmsPage } from "./types/cms.js";
 
 // Types — Portal
 export type {
@@ -116,16 +108,20 @@ export type {
   PortalConfig,
   FeatureKey,
   AnalyticsConfig,
-} from './types/portal.js';
+} from "./types/portal.js";
 
 // Modules logic
-export { MODULE_CODE_TO_FEATURE, ALL_FEATURE_KEYS, modulesToFeatures } from './modules.js';
+export {
+  MODULE_CODE_TO_FEATURE,
+  ALL_FEATURE_KEYS,
+  modulesToFeatures,
+} from "./modules.js";
 
 // Event logic
-export { mapApiEvent } from './events.js';
+export { mapApiEvent } from "./events.js";
 
 // Member logic
-export { mapApiMember } from './members.js';
+export { mapApiMember } from "./members.js";
 
 // Shop logic
 export {
@@ -147,8 +143,8 @@ export {
   formatSubscriptionPrice,
   getMonthlyEquivalent,
   getRelatedProducts,
-} from './shop.js';
-export type { SearchMatchSegment } from './shop.js';
+} from "./shop.js";
+export type { SearchMatchSegment } from "./shop.js";
 
 // Checkout logic
 export {
@@ -157,22 +153,26 @@ export {
   buildCreateOrderRequest,
   computeShippingEligibility,
   pickDefaultShippingId,
-} from './checkout.js';
-export type { CheckoutFormFields, PaymentOptions, ShippingEligibility } from './checkout.js';
+} from "./checkout.js";
+export type {
+  CheckoutFormFields,
+  PaymentOptions,
+  ShippingEligibility,
+} from "./checkout.js";
 
 // Coupon logic
-export { buildAppliedCoupon, getCouponErrorMessage } from './coupon.js';
+export { buildAppliedCoupon, getCouponErrorMessage } from "./coupon.js";
 
 // Auth
-export { AuthClient } from './auth.js';
+export { AuthClient } from "./auth.js";
 export type {
   OtpSendResponse,
   AuthTokenResponse,
   RegisterInput,
-} from './types/auth.js';
+} from "./types/auth.js";
 
 // API Client
-export { FavCRM, FavCRMError } from './client.js';
+export { FavCRM, FavCRMError } from "./client.js";
 export type {
   FavCRMConfig,
   ProductListParams,
@@ -184,7 +184,7 @@ export type {
   PaymentIntentResponse,
   BlogListParams,
   PaginatedResult,
-} from './client.js';
+} from "./client.js";
 
 // Validation
 export {
@@ -195,5 +195,5 @@ export {
   validateRegistrationForm,
   validateEventRegistrationForm,
   validateContactForm,
-} from './validation.js';
-export type { ValidationError } from './validation.js';
+} from "./validation.js";
+export type { ValidationError } from "./validation.js";

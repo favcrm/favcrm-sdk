@@ -127,3 +127,14 @@ export interface BookingConfig {
   currentDailyUsage: number;
   currentWeeklyUsage: number;
 }
+
+/**
+ * Brand-wide booking settings configured by the merchant in the portal.
+ * Controls how the customer-facing booking page behaves.
+ */
+export interface BookingSettings {
+  /** Whether to show the coupon input field on the booking page. */
+  showCoupon: boolean;
+  /** Slot picker rendering style: flat list of dates or month calendar. */
+  calendarStyle: "list" | "calendar";
+}
