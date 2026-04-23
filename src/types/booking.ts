@@ -7,6 +7,21 @@ export interface ServiceAddon {
   productImageUrl: string | null;
 }
 
+export interface RegistrationFormField {
+  key: string;
+  label: string;
+  type: "text" | "phone" | "email" | "select" | "date" | "checkbox";
+  required: boolean;
+  enabled: boolean;
+  order: number;
+  checkboxLabel?: string;
+}
+
+export interface RegistrationFormConfig {
+  fields: RegistrationFormField[];
+  defaultCountryCode: string;
+}
+
 export interface BookingService {
   id: string;
   name: string;
@@ -24,12 +39,20 @@ export interface BookingService {
   requiresConfirmation: boolean;
   requireLogin: boolean;
   advanceBookingDays: number | null;
+  maxBookableTimeslots: number | null;
   categoryId: string | null;
   categoryName: string | null;
   addons?: ServiceAddon[];
+  registrationForm?: RegistrationFormConfig;
 }
 
-export type BookingStatus = "draft" | "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
+export type BookingStatus =
+  | "draft"
+  | "pending"
+  | "confirmed"
+  | "cancelled"
+  | "completed"
+  | "no_show";
 
 export interface Booking {
   id: string;
@@ -96,6 +119,7 @@ export interface ResourceItem {
 
 export interface BookingConfig {
   advanceBookingDays: number | null;
+  maxBookableTimeslots: number | null;
   isAllowed: boolean;
   dailyBookingCount: number | null;
   weeklyBookingCount: number | null;
