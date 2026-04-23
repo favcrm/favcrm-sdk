@@ -17,7 +17,7 @@ export interface PublicMembershipTier {
   description: string | null;
   price: number;
   validPeriodValue: number;
-  validPeriodUnit: 'MONTHS' | 'YEARS';
+  validPeriodUnit: "MONTHS" | "YEARS";
   discount: number;
   benefits: string[];
   isPopular: boolean;
@@ -79,7 +79,7 @@ export interface ApiMember {
 export interface CardField {
   variable: string;
   label: string;
-  type?: 'header' | 'secondary';
+  type?: "header" | "secondary";
   id?: string;
   value?: string;
   children?: CardField[][];
@@ -112,7 +112,7 @@ export interface PaymentMethod {
 export interface RegistrationField {
   key: string;
   label: string;
-  type: 'text' | 'phone' | 'email' | 'select' | 'date' | 'checkbox';
+  type: "text" | "phone" | "email" | "select" | "date" | "checkbox";
   required: boolean;
   enabled: boolean;
   order: number;
@@ -127,6 +127,7 @@ export interface RegistrationFormConfig {
 export interface ReferralLookupResult {
   accountId: string;
   name: string;
+  maskedPhone?: string;
 }
 
 export interface RegistrationSubmission {
@@ -135,7 +136,7 @@ export interface RegistrationSubmission {
   phone: string;
   email?: string;
   birthMonthAndDay?: string; // "MMDD"
-  gender?: 'M' | 'F' | 'O';
+  gender?: "M" | "F" | "O";
   agreeToReceivePromotion: boolean;
   agreeToPrivacyPolicy: boolean;
   membershipTier?: number;
