@@ -171,7 +171,7 @@ export interface ShopOrderItem {
 }
 
 export interface ShopOrder {
-  id: number;
+  id?: number;
   orderId: string;
   orderNumber: string | null;
   status: string;

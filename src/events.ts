@@ -1,4 +1,4 @@
-import type { ApiEvent, Event } from './types/event.js';
+import type { ApiEvent, Event } from "./types/event.js";
 
 /** Map raw v6 API event to the normalized Event shape. */
 export function mapApiEvent(raw: ApiEvent): Event {
@@ -17,8 +17,6 @@ export function mapApiEvent(raw: ApiEvent): Event {
   } else {
     status = "upcoming";
   }
-
-  const quota = raw.quota ? parseInt(raw.quota, 10) : null;
 
   return {
     id: raw.id,
@@ -39,7 +37,6 @@ export function mapApiEvent(raw: ApiEvent): Event {
     price: raw.price,
     currency: raw.currency,
     isFree: raw.price === 0,
-    capacity: isNaN(quota as number) ? null : quota,
     remainingQuota: null,
     status,
   };

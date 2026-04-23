@@ -34,7 +34,12 @@ export interface EventDate {
   remainingQuota: number | null;
 }
 
-export type EventStatus = "upcoming" | "ongoing" | "past" | "cancelled" | "published";
+export type EventStatus =
+  | "upcoming"
+  | "ongoing"
+  | "past"
+  | "cancelled"
+  | "published";
 
 /** Normalized event used throughout the app. */
 export interface Event {
@@ -50,12 +55,15 @@ export interface Event {
   price: number;
   currency: string;
   isFree: boolean;
-  capacity: number | null;
   remainingQuota: number | null;
   status: EventStatus;
 }
 
-export type EventRegistrationStatus = "pending" | "confirmed" | "cancelled" | "paid";
+export type EventRegistrationStatus =
+  | "pending"
+  | "confirmed"
+  | "cancelled"
+  | "paid";
 
 export interface EventRegistration {
   id: string;
