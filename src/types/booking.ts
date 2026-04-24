@@ -20,6 +20,8 @@ export interface RegistrationFormField {
 export interface RegistrationFormConfig {
   fields: RegistrationFormField[];
   defaultCountryCode: string;
+  countryCode?: string;
+  countryPhonePrefix?: string;
 }
 
 export interface BookingService {

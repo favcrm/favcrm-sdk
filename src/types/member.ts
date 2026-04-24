@@ -122,6 +122,8 @@ export interface RegistrationField {
 export interface RegistrationFormConfig {
   fields: RegistrationField[];
   defaultCountryCode: string;
+  countryCode?: string;
+  countryPhonePrefix?: string;
 }
 
 export interface ReferralLookupResult {
