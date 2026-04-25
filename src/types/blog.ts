@@ -30,4 +30,11 @@ export interface BlogPost extends BlogPostListItem {
   blocks: string;
   seoTitle: string | null;
   seoDescription: string | null;
+  /**
+   * Custom-field values keyed by `postTypeFields.key`. Shape varies by the
+   * field's type — see `./post-types.ts` for the array-shaped values
+   * (`gallery`, `attachments`); other fields are strings/numbers/booleans.
+   * `null` when the post type defines no custom fields.
+   */
+  meta: Record<string, unknown> | null;
 }

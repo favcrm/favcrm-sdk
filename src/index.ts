@@ -81,6 +81,22 @@ export type {
 // Types — Blog
 export type { BlogCategory, BlogPostListItem, BlogPost } from "./types/blog.js";
 
+// Types — Custom Post Types (schema + value shapes)
+export type {
+  PostType,
+  PostTypeField,
+  PostTypeFieldType,
+  PostTypeFieldOptions,
+  PostTypeFieldChoice,
+  GalleryItem,
+  AttachmentItem,
+} from "./types/post-types.js";
+export {
+  POST_TYPE_FIELD_TYPES,
+  isGalleryFieldValue,
+  isAttachmentFieldValue,
+} from "./types/post-types.js";
+
 // Types — Contact
 export type {
   ContactEnquirySubmission,
