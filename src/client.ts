@@ -95,6 +95,7 @@ export class FavCRM {
   readonly tiers: TiersClient;
   readonly contact: ContactClient;
   readonly auth: AuthClient;
+  readonly walletPasses: WalletPassesClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -111,6 +112,7 @@ export class FavCRM {
     this.packages = new PackagesClient(this);
     this.tiers = new TiersClient(this);
     this.contact = new ContactClient(this);
+    this.walletPasses = new WalletPassesClient(this);
   }
 
   get companyId(): string {
@@ -123,6 +125,24 @@ export class FavCRM {
 
   clearToken(): void {
     this.jwt = null;
+  }
+
+  /** @internal — used by WalletPassesClient for binary downloads */
+  async fetchRaw(path: string, opts?: { params?: Record<string, string> }): Promise<Response> {
+    const qs = opts?.params ? toQueryString(opts.params) : "";
+    const url = `${this.config.baseUrl}${this.base}${path}${qs}`;
+    const headers: Record<string, string> = {
+      "X-Company-Id": this.config.companyId,
+    };
+    if (this.jwt) headers["Authorization"] = `Bearer ${this.jwt}`;
+    const fetchFn = this.config.fetch ?? globalThis.fetch;
+    const response = await fetchFn(url, { method: "GET", headers });
+    if (response.status === 401) {
+      this.config.onUnauthorized?.();
+      throw new FavCRMError(401, "Unauthorized");
+    }
+    if (!response.ok) throw new FavCRMError(response.status, response.statusText);
+    return response;
   }
 
   /** @internal — used by sub-clients */
@@ -569,5 +589,42 @@ class ContactClient {
 
   submit(data: ContactEnquirySubmission): Promise<ContactEnquiryResult> {
     return this.sdk.request("POST", "/contact", { body: data });
+  }
+}
+
+export interface WalletPassStatus {
+  apple: {
+    serialNumber: string;
+    version: number;
+    r2Key: string | null;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  google: {
+    objectId: string | null;
+    saveUrl: string | null;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+}
+
+class WalletPassesClient {
+  constructor(private sdk: FavCRM) {}
+
+  getStatus(): Promise<WalletPassStatus> {
+    return this.sdk.request("GET", "/wallet-passes/status");
+  }
+
+  generate(type: "apple" | "google"): Promise<{ queued: boolean }> {
+    return this.sdk.request("POST", "/wallet-passes/generate", { body: { type } });
+  }
+
+  async downloadAppleBlob(): Promise<Blob> {
+    const res = await this.sdk.fetchRaw("/wallet-passes/apple/download");
+    return res.blob();
+  }
+
+  getGoogleSaveUrl(): Promise<{ saveUrl: string | null }> {
+    return this.sdk.request("GET", "/wallet-passes/google/save-url");
   }
 }

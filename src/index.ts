@@ -197,3 +197,62 @@ export {
   validateContactForm,
 } from "./validation.js";
 export type { ValidationError } from "./validation.js";
+
+// Content blocks — typed CMS block primitives, plugin registry, parse/migrate
+export type {
+  ContentBlockBase,
+  AnyBlock,
+  BlockType,
+  DataOf,
+  ParagraphBlock,
+  HeadingBlock,
+  ImageBlock,
+  ListBlock,
+  QuoteBlock,
+  CodeBlock,
+  DividerBlock,
+  EmbedBlock,
+  FileBlock,
+  FaqBlock,
+  CalloutBlock,
+  GalleryBlock,
+  CtaBlock,
+  AccordionBlock,
+  ProductRefBlock,
+  UnknownBlock,
+} from "./types/content-blocks.js";
+
+export {
+  BlockRegistry,
+  CORE_BLOCKS,
+  createDefaultRegistry,
+  makeBlockId,
+  blockValidators,
+  paragraphPlugin,
+  headingPlugin,
+  imagePlugin,
+  listPlugin,
+  quotePlugin,
+  codePlugin,
+  dividerPlugin,
+  embedPlugin,
+  filePlugin,
+  faqPlugin,
+  calloutPlugin,
+  galleryPlugin,
+  ctaPlugin,
+  accordionPlugin,
+  productRefPlugin,
+} from "./content-blocks/index.js";
+
+export type {
+  BlockPlugin,
+  ValidationResult as BlockValidationResult,
+  ParseResult as BlockParseResult,
+} from "./content-blocks/registry.js";
+
+export {
+  htmlToBlocks,
+  blocksToHtmlPreview,
+  blocksToExcerpt,
+} from "./content-blocks/legacy.js";
