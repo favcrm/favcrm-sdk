@@ -102,6 +102,7 @@ export interface ProductListItem {
   isVariable: boolean;
   isFeatured: boolean;
   image: string | null;
+  reviewSummary?: ReviewSummary;
 }
 
 export interface CartItem {
