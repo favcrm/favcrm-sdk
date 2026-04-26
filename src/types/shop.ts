@@ -100,6 +100,7 @@ export interface ProductListItem {
   categorySlug: string | null;
   categories: CategoryRef[];
   isVariable: boolean;
+  isFeatured: boolean;
   image: string | null;
 }
 
