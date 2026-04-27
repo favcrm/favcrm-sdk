@@ -81,6 +81,9 @@ export type {
 // Types — Blog
 export type { BlogCategory, BlogPostListItem, BlogPost } from "./types/blog.js";
 
+// Types — Tag
+export type { Tag } from "./types/tag.js";
+
 // Types — Custom Post Types (schema + value shapes)
 export type {
   PostType,

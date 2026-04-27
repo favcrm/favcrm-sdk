@@ -1,3 +1,5 @@
+import type { Tag } from "./tag.js";
+
 export interface CmsBlock {
   type: string;
   data?: Record<string, unknown>;
@@ -19,4 +21,5 @@ export interface CmsPage {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  tags: Tag[];
 }

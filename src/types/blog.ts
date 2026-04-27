@@ -1,3 +1,5 @@
+import type { Tag } from "./tag.js";
+
 /** Blog category for organization. */
 export interface BlogCategory {
   id: string;
@@ -22,6 +24,7 @@ export interface BlogPostListItem {
   createdAt: string;
   updatedAt: string;
   categories: BlogCategory[];
+  tags: Tag[];
 }
 
 /** Full blog post with block content and SEO fields. */
