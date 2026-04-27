@@ -126,6 +126,22 @@ export type {
   AnalyticsConfig,
 } from "./types/portal.js";
 
+// Analytics
+export {
+  initAnalytics,
+  trackPageView,
+  trackPurchase,
+  trackSignUp,
+  trackLogin,
+  trackBookingComplete,
+  captureUtmParams,
+} from "./analytics.js";
+export type {
+  PurchaseItem,
+  PurchaseData,
+  UtmParams,
+} from "./analytics.js";
+
 // Modules logic
 export {
   MODULE_CODE_TO_FEATURE,
