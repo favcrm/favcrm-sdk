@@ -7,10 +7,11 @@ export const MODULE_CODE_TO_FEATURE: Record<string, FeatureKey> = {
   card_builder: "memberCard",
   orders_shop: "shop",
   pages: "pages",
+  gift_offers: "gifts",
 };
 
 export const ALL_FEATURE_KEYS: FeatureKey[] = [
-  "spaces", "events", "payments", "memberCard", "shop", "pages",
+  "spaces", "events", "payments", "memberCard", "shop", "pages", "gifts",
 ];
 
 export function modulesToFeatures(moduleCodes: string[]): Set<FeatureKey> {

@@ -32,6 +32,13 @@ import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
 import type { ServicePackageOrder } from "./types/service-package.js";
 import type { ContactEnquirySubmission, ContactEnquiryResult } from "./types/contact.js";
+import type {
+  ApiGiftOffer,
+  ApiGiftOfferList,
+  ApiRewardRedemption,
+  ApiRewardRedemptionList,
+  RedemptionStatus,
+} from "./types/gift.js";
 import { AuthClient } from "./auth.js";
 
 // ---------------------------------------------------------------------------
@@ -96,6 +103,7 @@ export class FavCRM {
   readonly contact: ContactClient;
   readonly auth: AuthClient;
   readonly walletPasses: WalletPassesClient;
+  readonly gifts: GiftsClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -113,6 +121,7 @@ export class FavCRM {
     this.tiers = new TiersClient(this);
     this.contact = new ContactClient(this);
     this.walletPasses = new WalletPassesClient(this);
+    this.gifts = new GiftsClient(this);
   }
 
   get companyId(): string {
@@ -628,5 +637,51 @@ class WalletPassesClient {
 
   getGoogleSaveUrl(): Promise<{ saveUrl: string | null }> {
     return this.sdk.request("GET", "/wallet-passes/google/save-url");
+  }
+}
+
+class GiftsClient {
+  constructor(private sdk: FavCRM) {}
+
+  listMyRedemptions(opts?: {
+    status?: RedemptionStatus | Lowercase<RedemptionStatus>;
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiRewardRedemptionList> {
+    const params: Record<string, string> = {};
+    if (opts?.status) params.status = String(opts.status).toLowerCase();
+    if (opts?.limit != null) params.limit = String(opts.limit);
+    if (opts?.offset != null) params.offset = String(opts.offset);
+    return this.sdk.request("GET", "/gifts/redemptions", { params });
+  }
+
+  getRedemption(id: string): Promise<ApiRewardRedemption> {
+    return this.sdk.request("GET", `/gifts/redemptions/${id}`);
+  }
+
+  fulfill(id: string): Promise<ApiRewardRedemption> {
+    return this.sdk.request("POST", `/gifts/redemptions/${id}/fulfill`);
+  }
+
+  listOffers(opts?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiGiftOfferList> {
+    const params: Record<string, string> = {};
+    if (opts?.limit != null) params.limit = String(opts.limit);
+    if (opts?.offset != null) params.offset = String(opts.offset);
+    return this.sdk.request("GET", "/gifts/offers", { params });
+  }
+
+  getOffer(id: string): Promise<ApiGiftOffer> {
+    return this.sdk.request("GET", `/gifts/offers/${id}`);
+  }
+
+  redeemOffer(id: string): Promise<ApiRewardRedemption> {
+    return this.sdk.request("POST", `/gifts/offers/${id}/redeem`);
+  }
+
+  claimByCode(code: string): Promise<ApiRewardRedemption> {
+    return this.sdk.request("POST", "/gifts/claim", { body: { code } });
   }
 }

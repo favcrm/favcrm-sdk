@@ -201,6 +201,33 @@ export type {
 // Coupon logic
 export { buildAppliedCoupon, getCouponErrorMessage } from "./coupon.js";
 
+// Types — Gift / Reward Redemption
+export type {
+  RedemptionStatus,
+  FaceValueType,
+  ApiGiftOfferSummary,
+  ApiRewardRedemption,
+  ApiRewardRedemptionList,
+  RewardRedemption,
+  GiftOfferSummary,
+  ApiGiftOffer,
+  ApiGiftOfferList,
+  GiftOffer,
+} from "./types/gift.js";
+
+// Gift logic
+export {
+  mapApiGiftOfferSummary,
+  mapApiGiftOffer,
+  mapApiRedemption,
+  getRedemptionStatusLabel,
+  isRedemptionUsable,
+  isRedemptionActionable,
+  formatRedemptionExpiry,
+  canAffordOffer,
+} from "./gifts.js";
+export type { AffordabilityResult } from "./gifts.js";
+
 // Auth
 export { AuthClient } from "./auth.js";
 export type {
