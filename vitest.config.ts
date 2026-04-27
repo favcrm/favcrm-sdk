@@ -12,6 +12,14 @@ export default defineConfig({
         'dist/',
         '**/*.test.ts',
         '**/__tests__/',
+        // Barrel + type-only modules: re-exports and pure interfaces with
+        // no runtime logic worth covering.
+        'src/index.ts',
+        'src/browser.ts',
+        'src/types/**',
+        // Vite/vitest config files
+        '*.config.ts',
+        '*.config.lib.ts',
       ],
       thresholds: {
         lines: 80,

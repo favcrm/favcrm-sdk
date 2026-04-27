@@ -348,3 +348,28 @@ describe("makeBlockId", () => {
 		expect(ids.size).toBe(100);
 	});
 });
+
+describe("Core plugins — defaults/validate smoke", () => {
+	// Exercises defaults() and validate() on every core plugin to ensure all
+	// plugin functions are reachable. We do NOT assert defaults() is valid —
+	// some plugins (image, file, cta, etc.) require user-supplied fields and
+	// return placeholder defaults that are intentionally rejected.
+	for (const plugin of CORE_BLOCKS) {
+		it(`${plugin.type}: defaults() returns an object`, () => {
+			const data = plugin.defaults();
+			expect(data).toBeTypeOf("object");
+		});
+
+		it(`${plugin.type}: validate() returns a ValidationResult`, () => {
+			const result = plugin.validate(plugin.defaults());
+			expect(result).toHaveProperty("ok");
+			expect(typeof result.ok).toBe("boolean");
+		});
+
+		it(`${plugin.type}: validate() handles arbitrary input without throwing`, () => {
+			expect(() => plugin.validate({ random: "input" })).not.toThrow();
+			expect(() => plugin.validate(null)).not.toThrow();
+			expect(() => plugin.validate(42)).not.toThrow();
+		});
+	}
+});
