@@ -136,6 +136,9 @@ export {
 // Event logic
 export { mapApiEvent } from "./events.js";
 
+// Booking logic
+export { isFreeSpace } from "./bookings.js";
+
 // Member logic
 export { mapApiMember } from "./members.js";
 
