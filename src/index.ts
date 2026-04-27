@@ -188,6 +188,9 @@ export type {
   OtpSendResponse,
   AuthTokenResponse,
   RegisterInput,
+  LoginChannel,
+  LoginChannelResponse,
+  OtpIdentifier,
 } from "./types/auth.js";
 
 // API Client

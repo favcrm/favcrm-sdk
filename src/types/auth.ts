@@ -1,5 +1,21 @@
+export type LoginChannel = "whatsapp" | "sms" | "email";
+
+/**
+ * Identifier passed to sendOtp / verifyOtp. The merchant's configured
+ * loginChannel determines which kind is accepted.
+ *  - whatsapp / sms → phone
+ *  - email          → email
+ *
+ * Passing a bare string is shorthand for `{ phone: string }`.
+ */
+export type OtpIdentifier = { phone: string } | { email: string };
+
 export interface OtpSendResponse {
   message: string;
+}
+
+export interface LoginChannelResponse {
+  channel: LoginChannel;
 }
 
 export interface AuthTokenResponse {
@@ -7,7 +23,8 @@ export interface AuthTokenResponse {
   accessToken: string;
   memberUuid: string;
   memberName: string;
-  phone: string;
+  phone?: string;
+  email?: string;
   pendingTierId?: string;
   tierPrice?: number;
 }

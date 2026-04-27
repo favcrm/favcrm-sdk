@@ -23,7 +23,7 @@ describe('AuthClient', () => {
     });
   });
 
-  it('sendOtp posts to /auth/otp with phone + companyId', async () => {
+  it('sendOtp(string) treats input as phone (legacy shape)', async () => {
     const fetch = mockFetch(envelope({ message: 'OTP sent' }));
     vi.stubGlobal('fetch', fetch);
 
@@ -40,7 +40,19 @@ describe('AuthClient', () => {
     expect(res).toEqual({ message: 'OTP sent' });
   });
 
-  it('verifyOtp posts to /auth/otp/verify and returns token payload', async () => {
+  it('sendOtp({ email }) sends email identifier', async () => {
+    const fetch = mockFetch(envelope({ message: 'OTP sent' }));
+    vi.stubGlobal('fetch', fetch);
+
+    await sdk.auth.sendOtp({ email: 'jane@example.com' });
+
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+      email: 'jane@example.com',
+      companyId: 'company-123',
+    });
+  });
+
+  it('verifyOtp(string, otp) treats string as phone', async () => {
     const payload = {
       token: 'jwt-x',
       accessToken: 'jwt-x',
@@ -61,6 +73,38 @@ describe('AuthClient', () => {
       otp: '123456',
     });
     expect(res).toEqual(payload);
+  });
+
+  it('verifyOtp({ email }, otp) sends email identifier', async () => {
+    const payload = {
+      token: 'jwt-y',
+      accessToken: 'jwt-y',
+      memberUuid: 'uuid-2',
+      memberName: 'Jane',
+      email: 'jane@example.com',
+    };
+    const fetch = mockFetch(envelope(payload));
+    vi.stubGlobal('fetch', fetch);
+
+    await sdk.auth.verifyOtp({ email: 'jane@example.com' }, '123456');
+
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+      email: 'jane@example.com',
+      otp: '123456',
+    });
+  });
+
+  it('getLoginChannel hits the public endpoint with companyId query', async () => {
+    const fetch = mockFetch(envelope({ channel: 'email' }));
+    vi.stubGlobal('fetch', fetch);
+
+    const res = await sdk.auth.getLoginChannel();
+
+    expect(fetch.mock.calls[0][0]).toBe(
+      'https://api.test.com/v6/customer-portal/auth/login-channel?companyId=company-123',
+    );
+    expect(fetch.mock.calls[0][1].method).toBe('GET');
+    expect(res).toEqual({ channel: 'email' });
   });
 
   it('register posts to /auth/register with body + injected companyId', async () => {
