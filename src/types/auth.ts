@@ -21,6 +21,8 @@ export interface LoginChannelResponse {
 export interface AuthTokenResponse {
   token: string;
   accessToken: string;
+  refreshToken?: string;
+  expiresIn?: number;
   memberUuid: string;
   memberName: string;
   phone?: string;
