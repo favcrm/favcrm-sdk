@@ -1,7 +1,7 @@
 {
   "name": "@favcrm/sdk",
-  "version": "0.12.0",
-  "description": "FavCRM SDK - Shared business logic for shop, checkout, and promotions",
+  "version": "1.0.0",
+  "description": "FavCRM SDK — AI-native business OS for merchants. Manage bookings, CMS, shop, members, and loyalty.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -30,10 +30,16 @@
   "keywords": [
     "favcrm",
     "sdk",
+    "headless-cms",
+    "bookings",
+    "mcp",
+    "ai-agent",
+    "crm",
+    "loyalty",
     "shop",
-    "checkout",
-    "promotions"
+    "ecommerce"
   ],
+  "homepage": "https://favcrm.io/developers",
   "author": "FavCRM Team",
   "license": "MIT",
   "repository": {
