@@ -137,6 +137,28 @@ export interface BookingConfig {
 export interface BookingSettings {
   /** Whether to show the coupon input field on the booking page. */
   showCoupon: boolean;
+  /** Whether to surface the Access Pass redemption flow on the booking page. */
+  showAccessPass: boolean;
   /** Slot picker rendering style: flat list of dates or month calendar. */
   calendarStyle: "list" | "calendar";
+  /** Whether members can cancel their own booking via the magic-link page. */
+  allowMemberCancellation: boolean;
+  /**
+   * Hours before bookingDate/startTime after which member self-cancel is
+   * blocked. `null` = no cutoff (allow until start). 0 also disables cutoff.
+   */
+  memberCancellationCutoffHours: number | null;
 }
+
+/**
+ * Defaults applied when a tenant has no booking settings configured. Single
+ * source of truth — re-used by the API merge and member-portal fallback so
+ * server and clients never drift.
+ */
+export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
+  showCoupon: true,
+  showAccessPass: true,
+  calendarStyle: "list",
+  allowMemberCancellation: true,
+  memberCancellationCutoffHours: null,
+};

@@ -69,6 +69,7 @@ export type {
   BookingSettings,
   ResourceItem,
 } from "./types/booking.js";
+export { DEFAULT_BOOKING_SETTINGS } from "./types/booking.js";
 
 // Types — Invoice
 export type {
@@ -156,7 +157,8 @@ export {
 export { mapApiEvent } from "./events.js";
 
 // Booking logic
-export { isFreeSpace } from "./bookings.js";
+export { isFreeSpace, canMemberCancelBooking } from "./bookings.js";
+export type { MemberCancelEligibility } from "./bookings.js";
 
 // Member logic
 export { mapApiMember } from "./members.js";
@@ -200,6 +202,16 @@ export type {
 
 // Coupon logic
 export { buildAppliedCoupon, getCouponErrorMessage } from "./coupon.js";
+
+// Booking error logic
+export {
+  BOOKING_ERROR_CODES,
+  getBookingErrorMessage,
+} from "./booking-errors.js";
+export type {
+  BookingCooldownDetails,
+  BookingErrorMessageHandlers,
+} from "./booking-errors.js";
 
 // Types — Gift / Reward Redemption
 export type {
