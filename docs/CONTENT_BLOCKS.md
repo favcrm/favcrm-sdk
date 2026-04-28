@@ -207,6 +207,10 @@ Policy in `apps/api/src/services/file-upload.policy.ts`:
 
 Two-phase save flow on the editor side: upload → URL → write block.
 
+Custom post-type fields use the same two-phase idea. A `url` field can set
+`options.uploadable = true`; merchant editors then upload a file and the
+field still stores the resulting URL string in `post.meta[fieldKey]`.
+
 ## Cross-package contract sync
 
 The SDK validators (hand-rolled) and API validators (zod) are **two

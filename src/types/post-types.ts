@@ -74,6 +74,12 @@ export interface PostTypeRepeaterSubField {
 export interface PostTypeFieldOptions {
   choices?: PostTypeFieldChoice[];
   fields?: PostTypeRepeaterSubField[];
+  /** URL fields can opt into merchant upload UX while still storing a URL string. */
+  uploadable?: boolean;
+  /** Optional file input accept string, e.g. "application/pdf,image/*". */
+  accept?: string;
+  /** Optional per-field upload limit in bytes. Backend remains the source of truth. */
+  maxBytes?: number;
   [key: string]: unknown;
 }
 
