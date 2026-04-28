@@ -72,6 +72,7 @@ export interface Product {
   stockQuantity: number;
   stockStatus: string;
   categories: CategoryRef[];
+  isFeatured: boolean;
   isVariable: boolean;
   isVariation: boolean;
   parentProductId: number | null;
@@ -119,6 +120,7 @@ export interface ShopCategory {
   description: string | null;
   imageUrl: string | null;
   parentId: number | null;
+  isFeatured: boolean;
   productCount: number;
 }
 

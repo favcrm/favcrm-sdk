@@ -129,10 +129,11 @@ describe('FavCRM Client', () => {
     it('listProducts with params', async () => {
       const fetch = mockFetch(envelope([]));
       vi.stubGlobal('fetch', fetch);
-      await sdk.shop.listProducts({ category_slug: 'incense', search: 'wood', page: 2, limit: 10 });
+      await sdk.shop.listProducts({ category_slug: 'incense', search: 'wood', featured: true, page: 2, limit: 10 });
       const url = fetch.mock.calls[0][0] as string;
       expect(url).toContain('category_slug=incense');
       expect(url).toContain('search=wood');
+      expect(url).toContain('featured=true');
       expect(url).toContain('page=2');
       expect(url).toContain('limit=10');
     });
@@ -155,8 +156,9 @@ describe('FavCRM Client', () => {
     it('listCategories', async () => {
       const fetch = mockFetch(envelope([]));
       vi.stubGlobal('fetch', fetch);
-      await sdk.shop.listCategories();
+      await sdk.shop.listCategories({ featured: true });
       expect(fetch.mock.calls[0][0]).toContain('/shop/categories');
+      expect(fetch.mock.calls[0][0]).toContain('featured=true');
     });
 
     it('listShippingMethods with amount', async () => {

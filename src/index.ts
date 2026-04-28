@@ -258,6 +258,7 @@ export { FavCRM, FavCRMError } from "./client.js";
 export type {
   FavCRMConfig,
   ProductListParams,
+  CategoryListParams,
   TimeSlotsParams,
   TimeSlotsResponse,
   StaffMember,

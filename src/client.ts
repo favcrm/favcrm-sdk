@@ -236,6 +236,10 @@ export interface ProductListParams {
   limit?: number;
 }
 
+export interface CategoryListParams {
+  featured?: boolean;
+}
+
 class ShopClient {
   constructor(private sdk: FavCRM) {}
 
@@ -263,8 +267,10 @@ class ShopClient {
     });
   }
 
-  listCategories(): Promise<ShopCategory[]> {
-    return this.sdk.request("GET", "/shop/categories");
+  listCategories(params?: CategoryListParams): Promise<ShopCategory[]> {
+    const p: Record<string, string> = {};
+    if (params?.featured !== undefined) p.featured = String(params.featured);
+    return this.sdk.request("GET", "/shop/categories", { params: p });
   }
 
   listShippingMethods(orderAmount?: number): Promise<ShippingMethod[]> {

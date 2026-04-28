@@ -137,7 +137,7 @@ describe('toCartProduct', () => {
       shippingWeight: null, status: 'publish', stockQuantity: 10,
       stockStatus: 'instock', categoryName: 'Cat',
       categories: [{ id: 1, name: 'Cat', slug: 'cat' }],
-      isVariable: false, isVariation: false, parentProductId: null,
+      isFeatured: true, isVariable: false, isVariation: false, parentProductId: null,
       images: [{ id: 1, src: 'img.jpg', name: 'img', alt: 'alt',
         blurhash: '', thumbUrl: 'thumb.jpg', mediumUrl: 'med.jpg',
         width: 100, height: 100, isPrimary: true }],
@@ -149,6 +149,7 @@ describe('toCartProduct', () => {
     expect(result.name).toBe('Test');
     expect(result.image).toBe('img.jpg');
     expect(result.description).toBe('Desc');
+    expect(result.isFeatured).toBe(true);
   });
 
   it('handles null description', () => {
@@ -159,7 +160,7 @@ describe('toCartProduct', () => {
       onSale: false, seoTitle: null, seoDescription: null,
       shippingWeight: null, status: 'publish', stockQuantity: 0,
       stockStatus: 'outofstock', categoryName: null,
-      categories: [], isVariable: false, isVariation: false,
+      categories: [], isFeatured: false, isVariable: false, isVariation: false,
       parentProductId: null, images: [], options: [],
       selectedOptions: [], variations: [],
     } satisfies Product;
@@ -368,7 +369,7 @@ describe('toCartProduct with variation', () => {
     onSale: false, seoTitle: null, seoDescription: null,
     shippingWeight: null, status: 'publish', stockQuantity: 10,
     stockStatus: 'instock', categoryName: null,
-    categories: [], isVariable: true, isVariation: false,
+    categories: [], isFeatured: false, isVariable: true, isVariation: false,
     parentProductId: null, images: [], options: [],
     selectedOptions: [], variations: [],
   };

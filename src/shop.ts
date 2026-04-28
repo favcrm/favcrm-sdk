@@ -130,7 +130,7 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
     categorySlug: product.categories?.[0]?.slug ?? null,
     categories: product.categories,
     isVariable: product.isVariable,
-    isFeatured: false,
+    isFeatured: product.isFeatured,
     image: product.images.length > 0 ? product.images[0].src : null,
   };
 
