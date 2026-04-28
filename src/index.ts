@@ -92,6 +92,7 @@ export type {
   PostTypeFieldType,
   PostTypeFieldOptions,
   PostTypeFieldChoice,
+  PostTypeRepeaterSubField,
   GalleryItem,
   AttachmentItem,
 } from "./types/post-types.js";
@@ -99,6 +100,7 @@ export {
   POST_TYPE_FIELD_TYPES,
   isGalleryFieldValue,
   isAttachmentFieldValue,
+  isRepeaterFieldValue,
 } from "./types/post-types.js";
 
 // Types — Contact

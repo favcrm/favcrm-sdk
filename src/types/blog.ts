@@ -36,7 +36,8 @@ export interface BlogPost extends BlogPostListItem {
   /**
    * Custom-field values keyed by `postTypeFields.key`. Shape varies by the
    * field's type — see `./post-types.ts` for the array-shaped values
-   * (`gallery`, `attachments`); other fields are strings/numbers/booleans.
+   * (`gallery`, `attachments`, `repeater`); other fields are
+   * strings/numbers/booleans.
    * `null` when the post type defines no custom fields.
    */
   meta: Record<string, unknown> | null;

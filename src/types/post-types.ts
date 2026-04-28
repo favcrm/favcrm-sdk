@@ -27,6 +27,7 @@ export const POST_TYPE_FIELD_TYPES = [
   "file",
   "gallery",
   "attachments",
+  "repeater",
 ] as const;
 
 export type PostTypeFieldType = (typeof POST_TYPE_FIELD_TYPES)[number];
@@ -55,9 +56,24 @@ export interface PostTypeFieldChoice {
   value: string;
 }
 
+/** Child field definition inside a `repeater` field. */
+export interface PostTypeRepeaterSubField {
+  key: string;
+  label: string;
+  fieldType: Exclude<
+    PostTypeFieldType,
+    "image" | "file" | "gallery" | "attachments" | "repeater"
+  >;
+  required: boolean;
+  options: PostTypeFieldOptions | null;
+  helpText: string | null;
+  sortOrder: number;
+}
+
 /** Parsed `options` for a field. Shape depends on the field type. */
 export interface PostTypeFieldOptions {
   choices?: PostTypeFieldChoice[];
+  fields?: PostTypeRepeaterSubField[];
   [key: string]: unknown;
 }
 
@@ -70,6 +86,8 @@ export interface PostTypeField {
   fieldType: PostTypeFieldType;
   required: boolean;
   options: PostTypeFieldOptions | null;
+  /** Present for `repeater` fields. Mirrors `options.fields` after API normalization. */
+  fields?: PostTypeRepeaterSubField[];
   helpText: string | null;
   sortOrder: number;
   createdAt: string;
@@ -124,5 +142,18 @@ export function isAttachmentFieldValue(
       typeof item === "object" &&
       typeof (item as { url?: unknown }).url === "string" &&
       typeof (item as { name?: unknown }).name === "string",
+  );
+}
+
+/**
+ * Type guard for `repeater` field values. Returns true if the value is an
+ * array of row objects.
+ */
+export function isRepeaterFieldValue(
+  value: unknown,
+): value is Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) return false;
+  return value.every(
+    (item) => item !== null && typeof item === "object" && !Array.isArray(item),
   );
 }
