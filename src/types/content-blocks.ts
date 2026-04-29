@@ -28,7 +28,7 @@ export type ParagraphBlock = ContentBlockBase<'paragraph', {
 }>;
 
 export type HeadingBlock = ContentBlockBase<'heading', {
-	level: 2 | 3 | 4;
+	level: 1 | 2 | 3 | 4;
 	text: string;
 	/** Optional URL fragment id. Auto-derived from text when absent. */
 	anchor?: string;

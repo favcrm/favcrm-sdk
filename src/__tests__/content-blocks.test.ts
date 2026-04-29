@@ -133,9 +133,9 @@ describe("BlockRegistry — plugin validation", () => {
 		if (!result.ok) expect(result.error).toContain("callout.tone");
 	});
 
-	it("validates heading levels 2/3/4 only", () => {
+	it("validates heading levels 1/2/3/4 only", () => {
+		expect(reg.validateBlock({ id: "h1", type: "heading", version: 1, data: { level: 1, text: "x" } }).ok).toBe(true);
 		expect(reg.validateBlock({ id: "h1", type: "heading", version: 1, data: { level: 2, text: "x" } }).ok).toBe(true);
-		expect(reg.validateBlock({ id: "h1", type: "heading", version: 1, data: { level: 1, text: "x" } }).ok).toBe(false);
 		expect(reg.validateBlock({ id: "h1", type: "heading", version: 1, data: { level: 5, text: "x" } }).ok).toBe(false);
 	});
 

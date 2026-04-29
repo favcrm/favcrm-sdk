@@ -69,7 +69,7 @@ export const headingPlugin: BlockPlugin<"heading", HeadingBlock["data"]> = {
 	validate: (raw) => {
 		if (!v.isObject(raw)) return err("heading.data must be object");
 		const { level, text, anchor } = raw as { level?: unknown; text?: unknown; anchor?: unknown };
-		if (!(level === 2 || level === 3 || level === 4)) return err("heading.level must be 2|3|4");
+		if (!(level === 1 || level === 2 || level === 3 || level === 4)) return err("heading.level must be 1|2|3|4");
 		if (!v.isString(text)) return err("heading.text must be string");
 		if (anchor !== undefined && !v.isString(anchor)) return err("heading.anchor must be string when set");
 		return ok({ level, text, ...(anchor !== undefined ? { anchor } : {}) });

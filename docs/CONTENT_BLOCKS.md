@@ -72,7 +72,7 @@ Block-specific data lives in `data`. The envelope is invariant.
 | Type          | Purpose                       | Notes                                        |
 | ------------- | ----------------------------- | -------------------------------------------- |
 | `paragraph`   | Rich-text paragraph           | `data.html`, migrates from legacy `data.text` |
-| `heading`     | Section heading               | `level: 2 \| 3 \| 4`, optional anchor       |
+| `heading`     | Section heading               | `level: 1 \| 2 \| 3 \| 4`, optional anchor  |
 | `image`       | Inline image                  | Required `alt`; use `''` for decorative     |
 | `list`        | Ordered/unordered list        | `items: string[]`                            |
 | `quote`       | Blockquote                    | Optional `cite`                              |
