@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { isFreeSpace, canMemberCancelBooking } from "../bookings.js";
+import { DEFAULT_BOOKING_SETTINGS } from "../types/booking.js";
 
 describe("isFreeSpace", () => {
   it("is true when price is 0 and paymentRequired is false", () => {
@@ -24,6 +25,12 @@ describe("isFreeSpace", () => {
 
   it("is false for malformed price strings", () => {
     expect(isFreeSpace({ price: "abc", paymentRequired: false })).toBe(false);
+  });
+});
+
+describe("DEFAULT_BOOKING_SETTINGS", () => {
+  it("shows unavailable timeslots by default for backward compatibility", () => {
+    expect(DEFAULT_BOOKING_SETTINGS.hideUnavailableTimeslots).toBe(false);
   });
 });
 

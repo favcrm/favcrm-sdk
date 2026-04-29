@@ -141,6 +141,8 @@ export interface BookingSettings {
   showAccessPass: boolean;
   /** Slot picker rendering style: flat list of dates or month calendar. */
   calendarStyle: "list" | "calendar";
+  /** Whether unavailable/full timeslots should be hidden from customers. */
+  hideUnavailableTimeslots: boolean;
   /** Whether members can cancel their own booking via the magic-link page. */
   allowMemberCancellation: boolean;
   /**
@@ -159,6 +161,7 @@ export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
   showCoupon: true,
   showAccessPass: true,
   calendarStyle: "list",
+  hideUnavailableTimeslots: false,
   allowMemberCancellation: true,
   memberCancellationCutoffHours: null,
 };
