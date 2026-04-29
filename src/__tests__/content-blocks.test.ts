@@ -293,12 +293,37 @@ describe("BlockRegistry — extension via custom plugin", () => {
 });
 
 describe("legacy helpers", () => {
-	it("htmlToBlocks wraps html in single paragraph block", () => {
+	it("htmlToBlocks converts one paragraph into one block", () => {
 		const blocks = htmlToBlocksLegacy("<p>hi</p>");
 		expect(blocks).toHaveLength(1);
 		expect(blocks[0]?.type).toBe("paragraph");
 		expect(blocks[0]?.id).toBeTruthy();
 		expect(blocks[0]?.version).toBe(1);
+		expect(blocks[0]?.data).toEqual({ html: "hi" });
+	});
+
+	it("htmlToBlocks splits paragraph wrappers into multiple blocks", () => {
+		const blocks = htmlToBlocksLegacy("<p>hi</p><p>there</p>");
+		expect(blocks).toHaveLength(2);
+		expect(blocks.map((b) => "data" in b ? b.data : null)).toEqual([
+			{ html: "hi" },
+			{ html: "there" },
+		]);
+	});
+
+	it("htmlToBlocks preserves hard line breaks as br tags", () => {
+		const blocks = htmlToBlocksLegacy("hi\nthere");
+		expect(blocks).toHaveLength(1);
+		expect(blocks[0]?.data).toEqual({ html: "hi<br>there" });
+	});
+
+	it("htmlToBlocks splits blank-line-separated plain text", () => {
+		const blocks = htmlToBlocksLegacy("hi\n\nthere");
+		expect(blocks).toHaveLength(2);
+		expect(blocks.map((b) => "data" in b ? b.data : null)).toEqual([
+			{ html: "hi" },
+			{ html: "there" },
+		]);
 	});
 
 	it("htmlToBlocks returns empty array for empty input", () => {
@@ -315,6 +340,13 @@ describe("legacy helpers", () => {
 		expect(html).toContain("<h2>Title</h2>");
 		expect(html).toContain("<p>body</p>");
 		expect(html).toContain("<ul><li>a</li><li>b</li></ul>");
+	});
+
+	it("blocksToHtmlPreview renders legacy newline paragraphs visibly", () => {
+		const html = blocksToHtmlPreview([
+			{ id: "1", type: "paragraph", version: 1, data: { html: "First\nline\n\nSecond" } },
+		]);
+		expect(html).toBe("<p>First<br>line</p>\n<p>Second</p>");
 	});
 
 	it("blocksToExcerpt extracts text from first paragraph", () => {

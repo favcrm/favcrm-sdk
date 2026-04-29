@@ -13,17 +13,19 @@ import type { AnyBlock } from "../types/content-blocks.js";
 import { makeBlockId } from "./index.js";
 
 /**
- * Wrap a plain HTML string as a single paragraph block array.
- * Returns an empty array on empty input.
+ * Compatibility helper for callers that still start with plain HTML/text.
+ *
+ * Deprecated for new write paths: prefer authoring `AnyBlock[]` directly.
+ * This helper remains exported for older SDK consumers, but it now normalizes
+ * obvious paragraphs instead of storing a whole document in one paragraph.
  */
 export function htmlToBlocks(html: string): AnyBlock[] {
-	if (!html || html.trim() === "") return [];
-	return [{
+	return splitHtmlIntoParagraphs(html).map((paragraphHtml) => ({
 		id: makeBlockId(),
 		type: "paragraph",
 		version: 1,
-		data: { html },
-	}];
+		data: { html: paragraphHtml },
+	}));
 }
 
 /**
@@ -40,7 +42,7 @@ export function blocksToHtmlPreview(blocks: AnyBlock[]): string {
 		// Skip forward-compat unknown blocks — `data` is `unknown` there.
 		if ("__unknown" in b) continue;
 		if (b.type === "paragraph") {
-			parts.push(b.data.html);
+			parts.push(renderableParagraphHtml(b.data.html));
 		} else if (b.type === "heading") {
 			parts.push(`<h${b.data.level}>${escapeHtml(b.data.text)}</h${b.data.level}>`);
 		} else if (b.type === "list") {
@@ -55,6 +57,38 @@ export function blocksToHtmlPreview(blocks: AnyBlock[]): string {
 		// Other blocks have no meaningful HTML preview — skip silently.
 	}
 	return parts.join("\n");
+}
+
+function splitHtmlIntoParagraphs(html: string): string[] {
+	const trimmed = html.trim();
+	if (!trimmed) return [];
+
+	const blockMatches = Array.from(trimmed.matchAll(/<(p|div)\b[^>]*>([\s\S]*?)<\/\1>/gi));
+	if (blockMatches.length > 0) {
+		return blockMatches.flatMap((match) => splitParagraphText(match[2] ?? ""));
+	}
+
+	return splitParagraphText(trimmed);
+}
+
+function splitParagraphText(html: string): string[] {
+	return html
+		.replace(/\r\n?/g, "\n")
+		.replace(/<br\s*\/?>/gi, "\n")
+		.split(/\n{2,}/)
+		.map((part) => part.trim().replace(/\n/g, "<br>"))
+		.filter(Boolean);
+}
+
+function hasBlockWrapper(html: string): boolean {
+	return /<\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|table|section|article)\b/i.test(html);
+}
+
+function renderableParagraphHtml(html: string): string {
+	if (hasBlockWrapper(html)) return html;
+	const parts = splitParagraphText(html);
+	if (parts.length <= 1) return parts[0] ?? "";
+	return parts.map((part) => `<p>${part}</p>`).join("\n");
 }
 
 function escapeHtml(s: string): string {
