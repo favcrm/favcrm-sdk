@@ -315,6 +315,14 @@ describe('FavCRM Client', () => {
       expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/payment-intent');
       expect(fetch.mock.calls[0][1].method).toBe('POST');
     });
+
+    it('getAccess', async () => {
+      const fetch = mockFetch(envelope({ canAccess: true }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.events.getAccess('reg-1');
+      expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/access');
+      expect(fetch.mock.calls[0][1].method).toBe('GET');
+    });
   });
 
   describe('members', () => {

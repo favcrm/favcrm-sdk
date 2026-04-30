@@ -12,6 +12,7 @@ import type {
   EventRegistrationSubmission,
   EventRegistrationResult,
   EventRegistration,
+  EventRegistrationAccess,
 } from "./types/event.js";
 import type {
   BookingService,
@@ -425,6 +426,10 @@ class EventsClient {
       "POST",
       `/event-registrations/${registrationId}/payment-intent`,
     );
+  }
+
+  getAccess(registrationId: string): Promise<EventRegistrationAccess> {
+    return this.sdk.request("GET", `/event-registrations/${registrationId}/access`);
   }
 }
 

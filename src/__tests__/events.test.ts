@@ -199,4 +199,17 @@ describe("mapApiEvent", () => {
     const result = mapApiEvent(makeApiEvent());
     expect(result.remainingQuota).toBeNull();
   });
+
+  it("maps ticket limits and delivery mode", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        maxTicketsPerOrder: 4,
+        maxTicketsPerMember: 6,
+        deliveryMode: "online",
+      }),
+    );
+    expect(result.maxTicketsPerOrder).toBe(4);
+    expect(result.maxTicketsPerMember).toBe(6);
+    expect(result.deliveryMode).toBe("online");
+  });
 });

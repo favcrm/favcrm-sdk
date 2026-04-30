@@ -81,5 +81,8 @@ export function mapApiEvent(raw: ApiEvent): Event {
     isFree: raw.price === 0,
     remainingQuota: null,
     status,
+    maxTicketsPerOrder: raw.maxTicketsPerOrder ?? 10,
+    maxTicketsPerMember: raw.maxTicketsPerMember ?? null,
+    deliveryMode: raw.deliveryMode ?? "in_person",
   };
 }

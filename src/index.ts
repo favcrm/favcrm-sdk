@@ -9,6 +9,9 @@ export type {
   ProductListItem,
   CartItem,
   ShopCategory,
+  ShopBrand,
+  ShopCollection,
+  ShopGroupRef,
   ShippingMethod,
   CreateOrderRequest,
   ShopOrderItem,
@@ -48,11 +51,13 @@ export type {
   ApiEventDate,
   EventDate,
   EventStatus,
+  EventDeliveryMode,
   Event,
   EventRegistrationStatus,
   EventRegistration,
   EventRegistrationSubmission,
   EventRegistrationResult,
+  EventRegistrationAccess,
 } from "./types/event.js";
 
 // Types — Booking

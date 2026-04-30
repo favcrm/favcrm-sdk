@@ -13,6 +13,9 @@ export interface ApiEvent {
   image?: string | null;
   quota?: string | null;
   showRemainingQuota?: boolean;
+  maxTicketsPerOrder?: number;
+  maxTicketsPerMember?: number | null;
+  deliveryMode?: EventDeliveryMode;
   dates: ApiEventDate[];
 }
 
@@ -47,6 +50,8 @@ export type EventStatus =
   | "cancelled"
   | "published";
 
+export type EventDeliveryMode = "in_person" | "online" | "hybrid";
+
 /** Normalized event used throughout the app. */
 export interface Event {
   id: string;
@@ -63,6 +68,9 @@ export interface Event {
   isFree: boolean;
   remainingQuota: number | null;
   status: EventStatus;
+  maxTicketsPerOrder: number;
+  maxTicketsPerMember: number | null;
+  deliveryMode: EventDeliveryMode;
 }
 
 export type EventRegistrationStatus =
@@ -73,13 +81,20 @@ export type EventRegistrationStatus =
 
 export interface EventRegistration {
   id: string;
+  eventId?: string;
   eventSlug: string;
   eventTitle: string;
+  sessionId?: string | null;
+  sessionStartTime?: string | null;
+  sessionEndTime?: string | null;
+  sessionAllDay?: boolean | null;
+  deliveryMode?: EventDeliveryMode;
   status: EventRegistrationStatus;
-  registeredAt: string;
-  totalAmount: number;
+  registeredAt?: string;
+  createdAt?: string;
+  totalAmount: number | string;
   currency: string;
-  paymentRequired: boolean;
+  paymentRequired?: boolean;
 }
 
 export interface EventRegistrationSubmission {
@@ -95,7 +110,7 @@ export interface EventRegistrationSubmission {
 }
 
 export interface EventRegistrationResult {
-  id: number;
+  id: string;
   eventSlug: string;
   eventTitle: string;
   status: string;
@@ -103,4 +118,15 @@ export interface EventRegistrationResult {
   totalAmount: number;
   currency: string;
   paymentRequired: boolean;
+}
+
+export interface EventRegistrationAccess {
+  registrationId: string;
+  eventTitle: string;
+  deliveryMode: EventDeliveryMode;
+  canAccess: boolean;
+  accessUrl: string | null;
+  accessInstructions: string | null;
+  availableAt: string | null;
+  reason: string | null;
 }
