@@ -80,6 +80,9 @@ describe("mapApiEvent", () => {
       endTime: "2099-01-01T12:00:00Z",
       allDay: true,
       remainingQuota: 5,
+      isExpired: false,
+      isFull: false,
+      available: true,
     });
     expect(result.dates[1]).toEqual({
       id: null,
@@ -87,6 +90,9 @@ describe("mapApiEvent", () => {
       endTime: null,
       allDay: false,
       remainingQuota: null,
+      isExpired: false,
+      isFull: false,
+      available: true,
     });
   });
 
@@ -108,8 +114,13 @@ describe("mapApiEvent", () => {
     expect(result.status).toBe("cancelled");
   });
 
-  it("maps published status", () => {
+  it("derives upcoming status for future published events", () => {
     const result = mapApiEvent(makeApiEvent({ status: "Published" }));
+    expect(result.status).toBe("upcoming");
+  });
+
+  it("keeps published status when there are no dates", () => {
+    const result = mapApiEvent(makeApiEvent({ status: "Published", dates: [] }));
     expect(result.status).toBe("published");
   });
 
@@ -157,6 +168,31 @@ describe("mapApiEvent", () => {
       makeApiEvent({ image: "https://img.test/photo.jpg" }),
     );
     expect(result.imageUrl).toBe("https://img.test/photo.jpg");
+  });
+
+  it("uses API availability flags when present", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        dates: [
+          {
+            id: "d1",
+            startTime: "2099-01-01T10:00:00Z",
+            endTime: "2099-01-01T12:00:00Z",
+            remainingQuota: null,
+            isExpired: true,
+            isFull: false,
+            available: false,
+          },
+        ],
+      }),
+    );
+
+    expect(result.dates[0]).toMatchObject({
+      remainingQuota: null,
+      isExpired: true,
+      isFull: false,
+      available: false,
+    });
   });
 
   it("always sets remainingQuota to null", () => {

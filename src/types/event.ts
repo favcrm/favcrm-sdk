@@ -22,7 +22,10 @@ export interface ApiEventDate {
   startTime: string;
   endTime?: string | null;
   allDay?: boolean;
-  remainingQuota?: number;
+  remainingQuota?: number | null;
+  isExpired?: boolean;
+  isFull?: boolean;
+  available?: boolean;
 }
 
 /** Normalized event date used throughout the app. */
@@ -32,6 +35,9 @@ export interface EventDate {
   endTime: string | null;
   allDay: boolean;
   remainingQuota: number | null;
+  isExpired: boolean;
+  isFull: boolean;
+  available: boolean;
 }
 
 export type EventStatus =
