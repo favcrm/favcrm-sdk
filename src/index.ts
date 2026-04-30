@@ -217,6 +217,7 @@ export {
 } from "./booking-errors.js";
 export type {
   BookingCooldownDetails,
+  BookingOnHandDetails,
   BookingErrorMessageHandlers,
 } from "./booking-errors.js";
 
