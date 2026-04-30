@@ -51,6 +51,28 @@ export interface CategoryRef {
   slug: string | null;
 }
 
+export interface ShopGroupRef {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface ShopBrand extends ShopGroupRef {
+  description: string | null;
+  imageUrl: string | null;
+  onlineEnabled: boolean;
+  sortOrder: number;
+  productCount: number;
+}
+
+export interface ShopCollection extends ShopGroupRef {
+  description: string | null;
+  imageUrl: string | null;
+  onlineEnabled: boolean;
+  sortOrder: number;
+  productCount: number;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -72,6 +94,8 @@ export interface Product {
   stockQuantity: number;
   stockStatus: string;
   categories: CategoryRef[];
+  brand?: ShopGroupRef | null;
+  collections?: ShopGroupRef[];
   isFeatured: boolean;
   isVariable: boolean;
   isVariation: boolean;
@@ -100,6 +124,8 @@ export interface ProductListItem {
   categoryName: string | null;
   categorySlug: string | null;
   categories: CategoryRef[];
+  brand?: ShopGroupRef | null;
+  collections?: ShopGroupRef[];
   isVariable: boolean;
   isFeatured: boolean;
   image: string | null;

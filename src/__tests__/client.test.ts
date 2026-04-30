@@ -129,9 +129,21 @@ describe('FavCRM Client', () => {
     it('listProducts with params', async () => {
       const fetch = mockFetch(envelope([]));
       vi.stubGlobal('fetch', fetch);
-      await sdk.shop.listProducts({ category_slug: 'incense', search: 'wood', featured: true, page: 2, limit: 10 });
+      await sdk.shop.listProducts({
+        category_slug: 'incense',
+        category_id: 12,
+        brand_slug: 'ats',
+        collection_slug: 'summer',
+        search: 'wood',
+        featured: true,
+        page: 2,
+        limit: 10,
+      });
       const url = fetch.mock.calls[0][0] as string;
       expect(url).toContain('category_slug=incense');
+      expect(url).toContain('category_id=12');
+      expect(url).toContain('brand_slug=ats');
+      expect(url).toContain('collection_slug=summer');
       expect(url).toContain('search=wood');
       expect(url).toContain('featured=true');
       expect(url).toContain('page=2');
@@ -159,6 +171,24 @@ describe('FavCRM Client', () => {
       await sdk.shop.listCategories({ featured: true });
       expect(fetch.mock.calls[0][0]).toContain('/shop/categories');
       expect(fetch.mock.calls[0][0]).toContain('featured=true');
+    });
+
+    it('listBrands and getBrand', async () => {
+      const fetch = mockFetch(envelope([]));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.shop.listBrands();
+      await sdk.shop.getBrand('ats');
+      expect(fetch.mock.calls[0][0]).toContain('/shop/brands');
+      expect(fetch.mock.calls[1][0]).toContain('/shop/brands/ats');
+    });
+
+    it('listCollections and getCollection', async () => {
+      const fetch = mockFetch(envelope([]));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.shop.listCollections();
+      await sdk.shop.getCollection('summer');
+      expect(fetch.mock.calls[0][0]).toContain('/shop/collections');
+      expect(fetch.mock.calls[1][0]).toContain('/shop/collections/summer');
     });
 
     it('listShippingMethods with amount', async () => {

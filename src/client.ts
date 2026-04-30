@@ -2,6 +2,8 @@ import type {
   ProductListItem,
   Product,
   ShopCategory,
+  ShopBrand,
+  ShopCollection,
   ShippingMethod,
   PaymentMethodOption,
   CreateOrderRequest,
@@ -230,6 +232,9 @@ export class FavCRM {
 
 export interface ProductListParams {
   category_slug?: string;
+  category_id?: number;
+  brand_slug?: string;
+  collection_slug?: string;
   search?: string;
   sort?: 'name' | 'price_asc' | 'price_desc' | 'newest';
   featured?: boolean;
@@ -247,6 +252,9 @@ class ShopClient {
   listProducts(params?: ProductListParams): Promise<ProductListItem[]> {
     const p: Record<string, string> = {};
     if (params?.category_slug) p.category_slug = params.category_slug;
+    if (params?.category_id !== undefined) p.category_id = String(params.category_id);
+    if (params?.brand_slug) p.brand_slug = params.brand_slug;
+    if (params?.collection_slug) p.collection_slug = params.collection_slug;
     if (params?.search) p.search = params.search;
     if (params?.sort) p.sort = params.sort;
     if (params?.featured !== undefined) p.featured = String(params.featured);
@@ -272,6 +280,22 @@ class ShopClient {
     const p: Record<string, string> = {};
     if (params?.featured !== undefined) p.featured = String(params.featured);
     return this.sdk.request("GET", "/shop/categories", { params: p });
+  }
+
+  listBrands(): Promise<ShopBrand[]> {
+    return this.sdk.request("GET", "/shop/brands");
+  }
+
+  getBrand(slug: string): Promise<ShopBrand> {
+    return this.sdk.request("GET", `/shop/brands/${slug}`);
+  }
+
+  listCollections(): Promise<ShopCollection[]> {
+    return this.sdk.request("GET", "/shop/collections");
+  }
+
+  getCollection(slug: string): Promise<ShopCollection> {
+    return this.sdk.request("GET", `/shop/collections/${slug}`);
   }
 
   listShippingMethods(orderAmount?: number): Promise<ShippingMethod[]> {
