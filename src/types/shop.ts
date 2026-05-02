@@ -161,6 +161,12 @@ export interface ShippingMethod {
 
 export interface CreateOrderRequest {
   lineItems: { productId: number; quantity: number; variationId?: number }[];
+  acceptedOffers?: {
+    ruleId: string;
+    productId: number;
+    quantity: number;
+    variationId?: number;
+  }[];
   customerInfo: {
     firstName: string;
     lastName: string;
@@ -194,10 +200,13 @@ export interface PaymentMethodOption {
 
 export interface ShopOrderItem {
   productId: number | null;
+  variationId?: number | null;
   productName: string;
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  lineType?: 'product' | 'addon' | 'bundle' | 'bundle_component';
+  offerRuleId?: string | null;
 }
 
 export interface ShopOrder {
@@ -246,4 +255,35 @@ export interface ProductSubscription {
   gatewaySubscriptionId: string | null;
   cancelledAt: string | null;
   createdAt: string;
+}
+
+export type ShopOfferContext =
+  | 'product_view'
+  | 'cart'
+  | 'cart_threshold'
+  | 'category_view'
+  | 'post_order';
+
+export interface ShopOfferListParams {
+  context?: ShopOfferContext;
+  productId?: number;
+  productIds?: number[];
+  categoryId?: number;
+  total?: number;
+}
+
+export interface ShopOfferProduct {
+  productId: number;
+  productName: string | null;
+  productPrice: string | null;
+  productImageUrl: string | null;
+  discountType: 'percentage' | 'fixed_amount' | null;
+  discountValue: string | null;
+}
+
+export interface ShopOffer {
+  ruleId: string;
+  ruleName: string;
+  ruleType: 'upsell' | 'cross_sell' | 'bundle' | 'post_purchase';
+  products: ShopOfferProduct[];
 }

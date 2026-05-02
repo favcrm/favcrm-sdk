@@ -71,6 +71,7 @@ export interface PaymentOptions {
   creditsUsed?: string;
   successUrl?: string;
   cancelUrl?: string;
+  acceptedOffers?: CreateOrderRequest['acceptedOffers'];
 }
 
 export function buildCreateOrderRequest(
@@ -100,6 +101,10 @@ export function buildCreateOrderRequest(
     },
     shippingMethodId: shippingMethodId ?? undefined,
     promotionCode,
+    ...(payment?.acceptedOffers != null &&
+      payment.acceptedOffers.length > 0 && {
+        acceptedOffers: payment.acceptedOffers,
+      }),
     ...(payment?.paymentMethodId != null && { paymentMethodId: payment.paymentMethodId }),
     ...(payment?.creditsUsed != null && { creditsUsed: payment.creditsUsed }),
     ...(payment?.successUrl != null && { successUrl: payment.successUrl }),

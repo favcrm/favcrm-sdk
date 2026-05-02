@@ -8,6 +8,8 @@ import type {
   PaymentMethodOption,
   CreateOrderRequest,
   ShopOrder,
+  ShopOffer,
+  ShopOfferListParams,
 } from "./types/shop.js";
 import type {
   ApiEvent,
@@ -306,6 +308,16 @@ class ShopClient {
 
   listPaymentMethods(): Promise<PaymentMethodOption[]> {
     return this.sdk.request("GET", "/shop/payment-methods");
+  }
+
+  listOffers(params?: ShopOfferListParams): Promise<ShopOffer[]> {
+    const p: Record<string, string> = {};
+    if (params?.context) p.context = params.context;
+    if (params?.productId !== undefined) p.productId = String(params.productId);
+    if (params?.productIds && params.productIds.length > 0) p.productIds = params.productIds.join(",");
+    if (params?.categoryId !== undefined) p.categoryId = String(params.categoryId);
+    if (params?.total !== undefined) p.total = String(params.total);
+    return this.sdk.request("GET", "/offers", { params: p });
   }
 
   createOrder(data: CreateOrderRequest): Promise<ShopOrder> {

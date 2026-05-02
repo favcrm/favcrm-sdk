@@ -212,6 +212,23 @@ describe('FavCRM Client', () => {
       expect(fetch.mock.calls[0][0]).toContain('/shop/payment-methods');
     });
 
+    it('listOffers with params', async () => {
+      const fetch = mockFetch(envelope([]));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.shop.listOffers({
+        context: 'cart_threshold',
+        productIds: [1, 2],
+        categoryId: 3,
+        total: 500,
+      });
+      const url = decodeURIComponent(fetch.mock.calls[0][0] as string);
+      expect(url).toContain('/offers');
+      expect(url).toContain('context=cart_threshold');
+      expect(url).toContain('productIds=1,2');
+      expect(url).toContain('categoryId=3');
+      expect(url).toContain('total=500');
+    });
+
     it('createOrder', async () => {
       const fetch = mockFetch(envelope({ orderId: 'o-1' }));
       vi.stubGlobal('fetch', fetch);

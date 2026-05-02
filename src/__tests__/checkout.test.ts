@@ -175,6 +175,13 @@ describe('buildCreateOrderRequest', () => {
     expect(req.lineItems[0].variationId).toBe(42);
   });
 
+  it('includes accepted offers when provided', () => {
+    const req = buildCreateOrderRequest(cart, form, null, undefined, {
+      acceptedOffers: [{ ruleId: 'rule-1', productId: 2, quantity: 1 }],
+    });
+    expect(req.acceptedOffers).toEqual([{ ruleId: 'rule-1', productId: 2, quantity: 1 }]);
+  });
+
   it('omits variationId when not present', () => {
     const req = buildCreateOrderRequest(cart, form, null);
     expect(req.lineItems[0]).not.toHaveProperty('variationId');
