@@ -165,7 +165,24 @@ export {
 } from "./modules.js";
 
 // Event logic
-export { mapApiEvent } from "./events.js";
+export {
+  mapApiEvent,
+  getAvailableEventDates,
+  getPrimaryEventDate,
+  isEventBookable,
+  getMaxOrderQuantity,
+  sortEventsForDisplay,
+  formatEventPrice,
+  formatEventDate,
+  getDeliveryModeLabel,
+  getEventAvailabilityLabel,
+  stripHtml,
+} from "./events.js";
+export type {
+  FormatEventPriceOptions,
+  FormatEventDateOptions,
+  EventAvailabilityLabels,
+} from "./events.js";
 
 // Booking logic
 export { isFreeSpace, canMemberCancelBooking } from "./bookings.js";

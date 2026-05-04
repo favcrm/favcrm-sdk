@@ -370,6 +370,55 @@ describe('FavCRM Client', () => {
       expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/access');
       expect(fetch.mock.calls[0][1].method).toBe('GET');
     });
+
+    it('startPayment returns intent unchanged when publishableKey present', async () => {
+      const fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve(
+              envelope({
+                clientSecret: 'cs',
+                paymentIntentId: 'pi',
+                publishableKey: 'pk_intent',
+              }),
+            ),
+        });
+      vi.stubGlobal('fetch', fetch);
+      const result = await sdk.events.startPayment('reg-1');
+      expect(result.publishableKey).toBe('pk_intent');
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/payment-intent');
+    });
+
+    it('startPayment falls back to gateway when publishableKey missing', async () => {
+      const fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve(
+              envelope({ clientSecret: 'cs', paymentIntentId: 'pi' }),
+            ),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: () =>
+            Promise.resolve(
+              envelope({ publishableKey: 'pk_gateway', gateway: 'stripe' }),
+            ),
+        });
+      vi.stubGlobal('fetch', fetch);
+      const result = await sdk.events.startPayment('reg-1');
+      expect(result.publishableKey).toBe('pk_gateway');
+      expect(result.clientSecret).toBe('cs');
+      expect(fetch).toHaveBeenCalledTimes(2);
+      expect(fetch.mock.calls[1][0]).toContain('/payment-gateway');
+    });
   });
 
   describe('members', () => {

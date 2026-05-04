@@ -2,6 +2,41 @@
 
 All notable changes to @favcrm/sdk are documented in this file.
 
+## 1.2.0 (2026-05-04)
+
+### New
+
+- **Shop offers** — `shop.listOffers(params?)` and `shop.getOffer(slug)`,
+  with new types `ShopOffer`, `ShopOfferContext`, `ShopOfferProduct`,
+  `ShopOfferListParams`. Checkout helpers updated for offer rules.
+- **`EventsClient.startPayment(registrationId)`** — convenience that calls
+  `createPaymentIntent` and falls back to `payments.getGateway()` when the
+  intent omits `publishableKey`. Always returns a usable Stripe key for
+  client-side Elements mounting.
+- **Event display helpers** (framework-agnostic, locale-aware):
+  - `getAvailableEventDates(event)` — sessions with id, available, not full/expired.
+  - `getPrimaryEventDate(event)` — first bookable session or fallback.
+  - `isEventBookable(event)` — convenience predicate.
+  - `getMaxOrderQuantity(event, date)` — clamps quantity to per-order cap and remaining quota.
+  - `sortEventsForDisplay(events)` — sort by primary session start time.
+  - `formatEventPrice(event, { locale, freeLabel })` — currency-aware, cached `Intl.NumberFormat`.
+  - `formatEventDate(date, { locale, timeZone, fallbackLabel, timezoneLabel })` — handles all-day, ranges, and timezone suffix.
+  - `getDeliveryModeLabel(mode)` — Online / Hybrid / In-person.
+  - `getEventAvailabilityLabel(event, labels?)` — Open / Sold out / Ended / Cancelled with custom-label support.
+  - `stripHtml(value)` — removes tags/style/script blocks and decodes common entities for plain-text rendering of `Event.description` (which can contain HTML when it falls back to `content`).
+
+### Changed
+
+- **`mapApiEvent` is now defensive about session ids**: when `ApiEventDate.id`
+  is missing, the resulting `EventDate.available` is forced to `false` so
+  storefronts can't accidentally submit a `null` sessionId. Other flags
+  (`isExpired`, `isFull`) still reflect the underlying state.
+
+### Types
+
+- New exports: `FormatEventPriceOptions`, `FormatEventDateOptions`,
+  `EventAvailabilityLabels`.
+
 ## 1.0.0 (2026-04-28)
 
 ### Breaking changes

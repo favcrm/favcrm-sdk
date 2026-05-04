@@ -464,6 +464,25 @@ class EventsClient {
     );
   }
 
+  /**
+   * Create a payment intent and guarantee a Stripe `publishableKey`.
+   *
+   * `createPaymentIntent` may omit `publishableKey` depending on the
+   * merchant's gateway configuration. This helper falls back to
+   * `payments.getGateway()` so the caller always has the key needed to
+   * mount Stripe Elements client-side.
+   */
+  async startPayment(
+    registrationId: string,
+  ): Promise<PaymentIntentResponse & { publishableKey: string }> {
+    const intent = await this.createPaymentIntent(registrationId);
+    if (intent.publishableKey) {
+      return intent as PaymentIntentResponse & { publishableKey: string };
+    }
+    const gateway = await this.sdk.payments.getGateway();
+    return { ...intent, publishableKey: gateway.publishableKey };
+  }
+
   getAccess(registrationId: string): Promise<EventRegistrationAccess> {
     return this.sdk.request("GET", `/event-registrations/${registrationId}/access`);
   }
