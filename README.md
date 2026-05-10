@@ -42,6 +42,16 @@ sdk.setToken(authResponse.accessToken);
 
 All subsequent SDK calls include the token automatically.
 
+### 🤖 AI Agent Skills (Cursor, Windsurf, Claude Code)
+
+Building your frontend with an AI Agent? Teach your AI our SDK best practices, backend data shapes, and API patterns by installing our official agent skills:
+
+```bash
+npx skills add favcrm/mcp
+```
+
+This installs our platform-wide skills, giving your local agent deep context on how to implement bookings, shop checkout, and member operations using this SDK.
+
 ### MCP Integration (for AI agents)
 
 Connect to FavCRM's MCP (Model Context Protocol) endpoint for AI agent access:
