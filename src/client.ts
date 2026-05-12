@@ -25,6 +25,7 @@ import type {
   BookingDetail,
   BookingConfig,
   ResourceItem,
+  BookingListParams,
 } from "./types/booking.js";
 import type { Member, CardSettings, PaymentMethod, PublicMembershipTier } from "./types/member.js";
 import type {
@@ -419,8 +420,8 @@ class BookingsClient {
     return this.sdk.request("POST", "/bookings/guest", { body: data });
   }
 
-  async list(params?: Record<string, string>): Promise<Booking[]> {
-    const res = await this.sdk.request<any>("GET", "/bookings", { params });
+  async list(params?: BookingListParams): Promise<Booking[]> {
+    const res = await this.sdk.request<any>("GET", "/bookings", { params: params as Record<string, string> });
     // API returns paginated { items, pagination } — extract the array
     return Array.isArray(res) ? res : res?.items ?? [];
   }

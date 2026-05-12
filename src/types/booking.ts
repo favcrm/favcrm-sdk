@@ -165,3 +165,12 @@ export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
   allowMemberCancellation: true,
   memberCancellationCutoffHours: null,
 };
+
+export interface BookingListParams {
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: string;
+  limit?: string;
+  upcoming?: "true" | "false";
+}
