@@ -252,6 +252,42 @@ describe('FavCRM Client', () => {
     });
   });
 
+  describe('blog', () => {
+    it('list serializes type, categoryId, sort, and order params', async () => {
+      const fetch = mockFetch(envelope({ items: [], pagination: {} }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.blog.list({
+        type: 'equipment',
+        categoryId: 'cat-1',
+        search: 'laser',
+        sort: 'sortOrder',
+        order: 'asc',
+        page: 2,
+        limit: 50,
+      });
+
+      const url = decodeURIComponent(fetch.mock.calls[0][0] as string);
+      expect(url).toContain('/cms/posts');
+      expect(url).toContain('type=equipment');
+      expect(url).toContain('categoryId=cat-1');
+      expect(url).toContain('search=laser');
+      expect(url).toContain('sort=sortOrder');
+      expect(url).toContain('order=asc');
+      expect(url).toContain('page=2');
+      expect(url).toContain('limit=50');
+    });
+
+    it('maps deprecated category param to categoryId', async () => {
+      const fetch = mockFetch(envelope({ items: [], pagination: {} }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.blog.list({ category: 'legacy-cat' });
+
+      const url = decodeURIComponent(fetch.mock.calls[0][0] as string);
+      expect(url).toContain('categoryId=legacy-cat');
+      expect(url).not.toContain('category=legacy-cat');
+    });
+  });
+
   describe('bookings', () => {
     it('listServices', async () => {
       const fetch = mockFetch(envelope([]));

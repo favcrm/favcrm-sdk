@@ -25,7 +25,9 @@ import type {
   BookingDetail,
   BookingConfig,
   ResourceItem,
+  CreateBookingRequest,
   BookingListParams,
+  UpdateBookingInput,
 } from "./types/booking.js";
 import type { Member, CardSettings, PaymentMethod, PublicMembershipTier } from "./types/member.js";
 import type {
@@ -412,11 +414,11 @@ class BookingsClient {
     return { ...res, slots } as TimeSlotsResponse;
   }
 
-  create(data: unknown): Promise<Booking> {
+  create(data: CreateBookingRequest): Promise<Booking> {
     return this.sdk.request("POST", "/bookings", { body: data });
   }
 
-  createGuest(data: unknown): Promise<Booking> {
+  createGuest(data: CreateBookingRequest): Promise<Booking> {
     return this.sdk.request("POST", "/bookings/guest", { body: data });
   }
 
@@ -434,6 +436,17 @@ class BookingsClient {
     bookingId: string,
   ): Promise<{ qrContent: string; expiresAt: string; bookingId: string }> {
     return this.sdk.request("POST", `/bookings/${bookingId}/access-qr`);
+  }
+  cancel(bookingId: string, reason?: string): Promise<BookingDetail> {
+    return this.sdk.request("POST", `/bookings/${bookingId}/cancel`, {
+      body: { reason },
+    });
+  }
+
+  reschedule(bookingId: string, data: UpdateBookingInput): Promise<BookingDetail> {
+    return this.sdk.request("POST", `/bookings/${bookingId}/reschedule`, {
+      body: data,
+    });
   }
 }
 
@@ -486,6 +499,9 @@ class EventsClient {
 
   getAccess(registrationId: string): Promise<EventRegistrationAccess> {
     return this.sdk.request("GET", `/event-registrations/${registrationId}/access`);
+  }
+  cancelRegistration(eventId: string, registrationId: string): Promise<{ cancelled: boolean }> {
+    return this.sdk.request("DELETE", `/events/${eventId}/registrations/${registrationId}`);
   }
 }
 
@@ -613,8 +629,12 @@ class CmsClient {
 }
 
 export interface BlogListParams {
+  type?: string;
   category?: string;
+  categoryId?: string;
   search?: string;
+  sort?: "createdAt" | "updatedAt" | "publishedAt" | "title" | "sortOrder";
+  order?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -650,8 +670,12 @@ class BlogClient {
 
   list(params?: BlogListParams): Promise<PaginatedResult<BlogPostListItem>> {
     const p: Record<string, string> = {};
-    if (params?.category) p.category = params.category;
+    if (params?.type) p.type = params.type;
+    if (params?.categoryId) p.categoryId = params.categoryId;
+    else if (params?.category) p.categoryId = params.category;
     if (params?.search) p.search = params.search;
+    if (params?.sort) p.sort = params.sort;
+    if (params?.order) p.order = params.order;
     if (params?.page) p.page = String(params.page);
     if (params?.limit) p.limit = String(params.limit);
     return this.sdk.request("GET", "/cms/posts", { params: p });
