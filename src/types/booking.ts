@@ -166,6 +166,20 @@ export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
   memberCancellationCutoffHours: null,
 };
 
+export interface CreateBookingRequest {
+  serviceId: string;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  scheduleId?: string;
+  staffId?: string;
+  resourceId?: string;
+  addonIds?: string[];
+  quoteId?: string;
+  notes?: string;
+  slots?: any[]; // Allow complex slot shapes depending on multi-slot booking
+}
+
 export interface BookingListParams {
   status?: string;
   dateFrom?: string;
@@ -173,4 +187,13 @@ export interface BookingListParams {
   page?: string;
   limit?: string;
   upcoming?: "true" | "false";
+}
+
+export interface UpdateBookingInput {
+  staffId?: string | null;
+  resourceId?: string | null;
+  bookingDate?: string;
+  startTime?: string;
+  endTime?: string;
+  notes?: string | null;
 }
