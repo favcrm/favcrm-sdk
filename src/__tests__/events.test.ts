@@ -115,6 +115,27 @@ describe("mapApiEvent", () => {
     expect(result.endDate).toBe("2099-01-01T12:00:00Z");
   });
 
+  it("uses the first available date for display dates", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        dates: [
+          {
+            id: "past",
+            startTime: "2020-01-01T10:00:00Z",
+            endTime: "2020-01-01T12:00:00Z",
+          },
+          {
+            id: "future",
+            startTime: "2099-02-01T10:00:00Z",
+            endTime: "2099-02-01T12:00:00Z",
+          },
+        ],
+      }),
+    );
+    expect(result.startDate).toBe("2099-02-01T10:00:00Z");
+    expect(result.endDate).toBe("2099-02-01T12:00:00Z");
+  });
+
   it("handles empty dates array", () => {
     const result = mapApiEvent(makeApiEvent({ dates: [] }));
     expect(result.startDate).toBeNull();
@@ -150,6 +171,78 @@ describe("mapApiEvent", () => {
       }),
     );
     expect(result.status).toBe("past");
+  });
+
+  it("does not mark an event past when a later session is still available", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        status: "Published",
+        dates: [
+          {
+            id: "past",
+            startTime: "2020-01-01T10:00:00Z",
+            endTime: "2020-01-01T12:00:00Z",
+          },
+          {
+            id: "future",
+            startTime: "2099-01-01T10:00:00Z",
+            endTime: "2099-01-01T12:00:00Z",
+            remainingQuota: 100,
+          },
+        ],
+      }),
+    );
+    expect(result.status).toBe("upcoming");
+    expect(getAvailableEventDates(result).map((date) => date.id)).toEqual([
+      "future",
+    ]);
+    expect(isEventBookable(result)).toBe(true);
+  });
+
+  it("trusts API ongoing status for events with mixed sessions", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        status: "ongoing",
+        dates: [
+          {
+            id: "past",
+            startTime: "2020-01-01T10:00:00Z",
+            endTime: "2020-01-01T12:00:00Z",
+          },
+          {
+            id: "future",
+            startTime: "2099-01-01T10:00:00Z",
+            endTime: "2099-01-01T12:00:00Z",
+            remainingQuota: 100,
+          },
+        ],
+      }),
+    );
+    expect(result.status).toBe("ongoing");
+    expect(isEventBookable(result)).toBe(true);
+  });
+
+  it("corrects stale API past status when a later session is available", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        status: "past",
+        dates: [
+          {
+            id: "past",
+            startTime: "2020-01-01T10:00:00Z",
+            endTime: "2020-01-01T12:00:00Z",
+          },
+          {
+            id: "future",
+            startTime: "2099-01-01T10:00:00Z",
+            endTime: "2099-01-01T12:00:00Z",
+            remainingQuota: 100,
+          },
+        ],
+      }),
+    );
+    expect(result.status).toBe("upcoming");
+    expect(isEventBookable(result)).toBe(true);
   });
 
   it("detects ongoing events", () => {
@@ -323,7 +416,15 @@ describe("isEventBookable", () => {
   it("false when past", () => {
     const event = makeEvent();
     event.status = "past";
+    event.dates = [makeDate({ isExpired: true, available: false })];
     expect(isEventBookable(event)).toBe(false);
+  });
+
+  it("true for stale past status when a session is still bookable", () => {
+    const event = makeEvent();
+    event.status = "past";
+    event.dates = [makeDate({ id: "future", remainingQuota: 5 })];
+    expect(isEventBookable(event)).toBe(true);
   });
 
   it("false when no available dates", () => {
@@ -458,6 +559,7 @@ describe("getEventAvailabilityLabel", () => {
   it("returns Ended for past events", () => {
     const event = makeEvent();
     event.status = "past";
+    event.dates = [makeDate({ isExpired: true, available: false })];
     expect(getEventAvailabilityLabel(event)).toBe("Ended");
   });
 

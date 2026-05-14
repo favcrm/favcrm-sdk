@@ -15,37 +15,87 @@ function getCloseDate(
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function sessionHasEnded(
+  date: Pick<EventDate, "startTime" | "endTime">,
+): boolean {
+  const close = getCloseDate(date.startTime, date.endTime);
+  return close !== null && close.getTime() <= Date.now();
+}
+
+function getApiDateCloseTime(date: ApiEvent["dates"][number]): number {
+  return (
+    getCloseDate(date.startTime, date.endTime ?? null)?.getTime() ?? Infinity
+  );
+}
+
+function normalizeApiStatus(status: string): Event["status"] | null {
+  const statusLower = status.toLowerCase();
+  if (
+    statusLower === "upcoming" ||
+    statusLower === "ongoing" ||
+    statusLower === "past" ||
+    statusLower === "cancelled" ||
+    statusLower === "published"
+  ) {
+    return statusLower;
+  }
+  return null;
+}
+
+function deriveEventStatus(raw: ApiEvent): Event["status"] {
+  const normalized = normalizeApiStatus(raw.status);
+  if (normalized === "cancelled") return "cancelled";
+
+  const dates = raw.dates ?? [];
+  if (dates.length === 0) {
+    return normalized === "published" ? "published" : normalized ?? "upcoming";
+  }
+
+  if (normalized && normalized !== "published" && normalized !== "past")
+    return normalized;
+
+  const now = Date.now();
+  const hasOngoing = dates.some((date) => {
+    const start = new Date(date.startTime).getTime();
+    const close = getApiDateCloseTime(date);
+    return Number.isFinite(start) && start <= now && close > now;
+  });
+  if (hasOngoing) return "ongoing";
+
+  const allEnded = dates.every((date) => getApiDateCloseTime(date) <= now);
+  return allEnded ? "past" : "upcoming";
+}
+
+function getDisplayDate(dates: EventDate[]): EventDate | null {
+  return getAvailableEventDates({ dates } as Event)[0] ?? dates[0] ?? null;
+}
+
 /** Map raw v6 API event to the normalized Event shape. */
 export function mapApiEvent(raw: ApiEvent): Event {
-  const firstDate = raw.dates?.[0] ?? null;
-  const startDate = firstDate?.startTime ?? null;
-  const endDate = firstDate?.endTime ?? null;
-
-  const statusLower = raw.status.toLowerCase();
-  let status: Event["status"];
-  if (statusLower === "cancelled") {
-    status = "cancelled";
-  } else if (startDate) {
-    const start = new Date(startDate);
-    const close = getCloseDate(startDate, endDate);
-    const now = Date.now();
-    if (
-      !Number.isNaN(start.getTime()) &&
-      start.getTime() <= now &&
-      close &&
-      close.getTime() > now
-    ) {
-      status = "ongoing";
-    } else if (close && close.getTime() <= now) {
-      status = "past";
-    } else {
-      status = "upcoming";
-    }
-  } else if (statusLower === "published") {
-    status = "published";
-  } else {
-    status = "upcoming";
-  }
+  const dates = (raw.dates || []).map((d) => {
+    const id = d.id ?? null;
+    const close = getCloseDate(d.startTime, d.endTime ?? null);
+    const expired = (close?.getTime() ?? Infinity) <= Date.now();
+    const quotaExhausted =
+      d.remainingQuota !== undefined &&
+      d.remainingQuota !== null &&
+      d.remainingQuota <= 0;
+    const inferredAvailable = !(expired || quotaExhausted);
+    // A session is unbookable without an id, regardless of backend flags —
+    // clients use this to drive booking UI and must not submit a null id.
+    const available = id ? (d.available ?? inferredAvailable) : false;
+    return {
+      id,
+      startTime: d.startTime,
+      endTime: d.endTime ?? null,
+      allDay: d.allDay ?? false,
+      remainingQuota: d.remainingQuota ?? null,
+      isExpired: d.isExpired ?? expired,
+      isFull: d.isFull ?? quotaExhausted,
+      available,
+    };
+  });
+  const displayDate = getDisplayDate(dates);
 
   return {
     id: raw.id,
@@ -53,37 +103,15 @@ export function mapApiEvent(raw: ApiEvent): Event {
     title: raw.title,
     description: raw.introduction || raw.content || "",
     imageUrl: raw.image || null,
-    startDate,
-    endDate,
-    dates: (raw.dates || []).map((d) => {
-      const id = d.id ?? null;
-      const close = getCloseDate(d.startTime, d.endTime ?? null);
-      const expired = (close?.getTime() ?? Infinity) <= Date.now();
-      const quotaExhausted =
-        d.remainingQuota !== undefined &&
-        d.remainingQuota !== null &&
-        d.remainingQuota <= 0;
-      const inferredAvailable = !(expired || quotaExhausted);
-      // A session is unbookable without an id, regardless of backend flags —
-      // clients use this to drive booking UI and must not submit a null id.
-      const available = id ? (d.available ?? inferredAvailable) : false;
-      return {
-        id,
-        startTime: d.startTime,
-        endTime: d.endTime ?? null,
-        allDay: d.allDay ?? false,
-        remainingQuota: d.remainingQuota ?? null,
-        isExpired: d.isExpired ?? expired,
-        isFull: d.isFull ?? quotaExhausted,
-        available,
-      };
-    }),
+    startDate: displayDate?.startTime ?? null,
+    endDate: displayDate?.endTime ?? null,
+    dates,
     location: raw.venue || null,
     price: raw.price,
     currency: raw.currency,
     isFree: raw.price === 0,
     remainingQuota: null,
-    status,
+    status: deriveEventStatus(raw),
     maxTicketsPerOrder: raw.maxTicketsPerOrder ?? 10,
     maxTicketsPerMember: raw.maxTicketsPerMember ?? null,
     deliveryMode: raw.deliveryMode ?? "in_person",
@@ -100,7 +128,8 @@ export function mapApiEvent(raw: ApiEvent): Event {
  */
 export function getAvailableEventDates(event: Event): EventDate[] {
   return event.dates.filter(
-    (d) => d.id && d.available && !d.isExpired && !d.isFull,
+    (d) =>
+      d.id && d.available && !d.isExpired && !d.isFull && !sessionHasEnded(d),
   );
 }
 
@@ -111,7 +140,7 @@ export function getPrimaryEventDate(event: Event): EventDate | null {
 
 /** True when the event has at least one bookable session and isn't past/cancelled. */
 export function isEventBookable(event: Event): boolean {
-  if (event.status === "cancelled" || event.status === "past") return false;
+  if (event.status === "cancelled") return false;
   return getAvailableEventDates(event).length > 0;
 }
 
@@ -244,7 +273,8 @@ export function getEventAvailabilityLabel(
   labels: EventAvailabilityLabels = {},
 ): string {
   if (event.status === "cancelled") return labels.cancelled ?? "Cancelled";
-  if (event.status === "past") return labels.past ?? "Ended";
+  if (event.status === "past" && getAvailableEventDates(event).length === 0)
+    return labels.past ?? "Ended";
   if (getAvailableEventDates(event).length === 0)
     return labels.full ?? "Sold out";
   return labels.open ?? "Open";
