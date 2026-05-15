@@ -62,6 +62,9 @@ export type {
   EventRegistrationSubmission,
   EventRegistrationResult,
   EventRegistrationAccess,
+  EventPaymentMethod,
+  EventPaymentSessionRequest,
+  EventPaymentSession,
 } from "./types/event.js";
 
 // Types — Booking
@@ -322,6 +325,8 @@ export type {
   CodeBlock,
   DividerBlock,
   EmbedBlock,
+  HtmlBlock,
+  YoutubeBlock,
   FileBlock,
   FaqBlock,
   CalloutBlock,
@@ -346,6 +351,8 @@ export {
   codePlugin,
   dividerPlugin,
   embedPlugin,
+  htmlPlugin,
+  youtubePlugin,
   filePlugin,
   faqPlugin,
   calloutPlugin,

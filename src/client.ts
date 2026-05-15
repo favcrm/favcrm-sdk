@@ -17,6 +17,9 @@ import type {
   EventRegistrationResult,
   EventRegistration,
   EventRegistrationAccess,
+  EventPaymentMethod,
+  EventPaymentSessionRequest,
+  EventPaymentSession,
 } from "./types/event.js";
 import type {
   BookingService,
@@ -475,6 +478,21 @@ class EventsClient {
     return this.sdk.request(
       "POST",
       `/event-registrations/${registrationId}/payment-intent`,
+    );
+  }
+
+  listPaymentMethods(): Promise<EventPaymentMethod[]> {
+    return this.sdk.request("GET", "/event-payment-methods");
+  }
+
+  createPaymentSession(
+    registrationId: string,
+    data: EventPaymentSessionRequest,
+  ): Promise<EventPaymentSession> {
+    return this.sdk.request(
+      "POST",
+      `/event-registrations/${registrationId}/payment`,
+      { body: data },
     );
   }
 

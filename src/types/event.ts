@@ -130,3 +130,31 @@ export interface EventRegistrationAccess {
   availableAt: string | null;
   reason: string | null;
 }
+
+export interface EventPaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  instructions: string | null;
+  position: number;
+  hasGateway: boolean;
+  gatewayType: string | null;
+}
+
+export interface EventPaymentSessionRequest {
+  successUrl: string;
+  cancelUrl: string;
+  paymentMethodId?: string;
+}
+
+export interface EventPaymentSession {
+  mode?: "gateway" | "manual";
+  paymentUrl?: string;
+  transactionId?: string;
+  sessionId?: string;
+  gatewayType?: string;
+  registrationStatus?: string;
+  paymentInstructions?: string | null;
+  paymentMethodName?: string;
+  expiresAt?: string;
+}
