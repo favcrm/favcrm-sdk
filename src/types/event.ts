@@ -118,6 +118,7 @@ export interface EventRegistrationResult {
   totalAmount: number;
   currency: string;
   paymentRequired: boolean;
+  guestRegistrationToken?: string;
 }
 
 export interface EventRegistrationAccess {
@@ -156,5 +157,6 @@ export interface EventPaymentSession {
   registrationStatus?: string;
   paymentInstructions?: string | null;
   paymentMethodName?: string;
+  guestRegistrationToken?: string;
   expiresAt?: string;
 }
