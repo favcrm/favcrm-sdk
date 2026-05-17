@@ -151,6 +151,58 @@ describe("BlockRegistry — plugin validation", () => {
 		});
 		expect(result.ok).toBe(true);
 	});
+
+	it("validates safe html blocks and rejects active content", () => {
+		expect(reg.validateBlock({
+			id: "html1",
+			type: "html",
+			version: 1,
+			data: { html: "<section><p>Before and after</p></section>" },
+		}).ok).toBe(true);
+
+		const result = reg.validateBlock({
+			id: "html2",
+			type: "html",
+			version: 1,
+			data: { html: "<script>alert(1)</script>" },
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toContain("active content");
+	});
+
+	it("validates normalized youtube blocks", () => {
+		const result = reg.validateBlock({
+			id: "yt1",
+			type: "youtube",
+			version: 1,
+			data: {
+				videoId: "dQw4w9WgXcQ",
+				url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+				title: "Demo",
+				startSeconds: 12,
+				aspectRatio: "16/9",
+			},
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it("rejects malformed youtube blocks", () => {
+		expect(reg.validateBlock({
+			id: "yt1",
+			type: "youtube",
+			version: 1,
+			data: { videoId: "not-a-video-id" },
+		}).ok).toBe(false);
+
+		const result = reg.validateBlock({
+			id: "yt2",
+			type: "youtube",
+			version: 1,
+			data: { videoId: "dQw4w9WgXcQ", url: "https://example.com/watch?v=dQw4w9WgXcQ" },
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) expect(result.error).toContain("youtube.url");
+	});
 });
 
 describe("BlockRegistry — parseBlocks (read path)", () => {

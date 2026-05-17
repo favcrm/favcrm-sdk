@@ -47,6 +47,8 @@ export {
 	codePlugin,
 	dividerPlugin,
 	embedPlugin,
+	htmlPlugin,
+	youtubePlugin,
 	filePlugin,
 	faqPlugin,
 	calloutPlugin,

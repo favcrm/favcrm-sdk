@@ -79,6 +79,8 @@ Block-specific data lives in `data`. The envelope is invariant.
 | `code`        | Code block                    | `lang` for highlighter                       |
 | `divider`     | Horizontal rule               | No payload                                   |
 | `embed`       | YouTube/Vimeo/iframe          | Provider enum                                |
+| `html`        | Sanitized HTML fragment       | No active content; use dedicated embed blocks |
+| `youtube`     | YouTube video                 | Stores canonical `videoId`; render with nocookie embed |
 | `file`        | File attachment / download    | URL + mime + size + originalName             |
 | `faq`         | FAQ list                      | Emits `FAQPage` JSON-LD when rendered        |
 | `callout`     | Boxed note (info/warn/etc.)   | Tone enum                                    |
@@ -160,6 +162,25 @@ Both blocks are first-class:
   `semantic: 'faq'`. Pick **one** before merchants build content;
   recommendation: keep both (FAQ for unambiguous SEO intent; accordion for
   generic collapsibles like menu sections, tier comparisons).
+
+## HTML & YouTube best practice
+
+- Prefer semantic blocks (`paragraph`, `heading`, `image`, `cta`, `youtube`)
+  over raw HTML. They are easier to render consistently, sanitize, index, and
+  migrate.
+- Use `youtube` for videos instead of pasting iframe HTML. Store `videoId`
+  plus optional `title`, `startSeconds`, and `aspectRatio`; render as
+  `https://www.youtube-nocookie.com/embed/{videoId}` and set iframe
+  `title`, `loading="lazy"`, `allowfullscreen`, and a restrictive `allow`
+  list.
+- Keep `embed` for backward compatibility and non-core providers. New YouTube
+  content should use `youtube`.
+- Use `html` only for trusted, sanitized fragments that cannot be expressed
+  as structured blocks. The core validator rejects active content such as
+  scripts, iframes, inline event handlers, and `javascript:` URLs.
+- Frontend renderers should still sanitize `html` at render time with the
+  app's sanitizer. API/SDK validation is a contract guard, not a replacement
+  for output sanitization.
 
 ## Editor architecture (shipped)
 

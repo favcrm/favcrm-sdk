@@ -22,6 +22,8 @@ import type {
 	CodeBlock,
 	DividerBlock,
 	EmbedBlock,
+	HtmlBlock,
+	YoutubeBlock,
 	FileBlock,
 	FaqBlock,
 	CalloutBlock,
@@ -39,6 +41,29 @@ function ok<T>(data: T): ValidationResult<T> {
 
 function err<T>(message: string): ValidationResult<T> {
 	return { ok: false, error: message };
+}
+
+function isSafeHtmlFragment(value: string): boolean {
+	return !/<\s*(script|iframe|object|embed|link|meta|base|form|input|button|textarea|select)\b/i.test(value)
+		&& !/\son[a-z]+\s*=/i.test(value)
+		&& !/(href|src)\s*=\s*(['"]?)\s*javascript:/i.test(value);
+}
+
+function isYoutubeVideoId(value: string): boolean {
+	return /^[A-Za-z0-9_-]{11}$/.test(value);
+}
+
+function isYoutubeUrl(value: string): boolean {
+	try {
+		const url = new URL(value);
+		const host = url.hostname.replace(/^www\./, "");
+		return host === "youtu.be"
+			|| host === "youtube.com"
+			|| host === "m.youtube.com"
+			|| host === "youtube-nocookie.com";
+	} catch {
+		return false;
+	}
 }
 
 // ─── core plugins ───────────────────────────────────────────────────────────
@@ -156,6 +181,44 @@ export const embedPlugin: BlockPlugin<"embed", EmbedBlock["data"]> = {
 		if (!v.isNonEmptyString(url)) return err("embed.url is required");
 		if (aspectRatio !== undefined && !v.isString(aspectRatio)) return err("embed.aspectRatio must be string when set");
 		return ok({ provider, url, ...(aspectRatio !== undefined ? { aspectRatio } : {}) });
+	},
+};
+
+export const htmlPlugin: BlockPlugin<"html", HtmlBlock["data"]> = {
+	type: "html",
+	version: 1,
+	defaults: () => ({ html: "" }),
+	validate: (raw) => {
+		if (!v.isObject(raw)) return err("html.data must be object");
+		const { html } = raw as { html?: unknown };
+		if (!v.isNonEmptyString(html)) return err("html.html is required");
+		if (!isSafeHtmlFragment(html)) return err("html.html cannot contain active content; use dedicated blocks for embeds");
+		return ok({ html });
+	},
+};
+
+export const youtubePlugin: BlockPlugin<"youtube", YoutubeBlock["data"]> = {
+	type: "youtube",
+	version: 1,
+	defaults: () => ({ videoId: "" }),
+	validate: (raw) => {
+		if (!v.isObject(raw)) return err("youtube.data must be object");
+		const { videoId, url, title, startSeconds, aspectRatio } = raw as {
+			videoId?: unknown; url?: unknown; title?: unknown; startSeconds?: unknown; aspectRatio?: unknown;
+		};
+		if (!v.isString(videoId) || !isYoutubeVideoId(videoId)) return err("youtube.videoId must be an 11-character YouTube video id");
+		if (url !== undefined && (!v.isString(url) || !isYoutubeUrl(url))) return err("youtube.url must be a YouTube URL when set");
+		if (title !== undefined && !v.isString(title)) return err("youtube.title must be string when set");
+		if (startSeconds !== undefined && (!v.isNumber(startSeconds) || startSeconds < 0 || !Number.isInteger(startSeconds))) {
+			return err("youtube.startSeconds must be a non-negative integer when set");
+		}
+		if (aspectRatio !== undefined && !v.isString(aspectRatio)) return err("youtube.aspectRatio must be string when set");
+		const out: YoutubeBlock["data"] = { videoId };
+		if (url !== undefined) out.url = url;
+		if (title !== undefined) out.title = title;
+		if (startSeconds !== undefined) out.startSeconds = startSeconds;
+		if (aspectRatio !== undefined) out.aspectRatio = aspectRatio;
+		return ok(out);
 	},
 };
 
@@ -317,6 +380,8 @@ export const CORE_BLOCKS: BlockPlugin[] = [
 	codePlugin,
 	dividerPlugin,
 	embedPlugin,
+	htmlPlugin,
+	youtubePlugin,
 	filePlugin,
 	faqPlugin,
 	calloutPlugin,

@@ -1,4 +1,4 @@
-import type { BookingService, BookingSettings } from "./types/booking.js";
+import type { BookingService, BookingSettings, Booking } from "./types/booking.js";
 
 /**
  * A space (booking service) is "free" only when both price is zero AND the
@@ -65,4 +65,55 @@ export function canMemberCancelBooking(
   }
 
   return { ok: true };
+}
+
+/**
+ * Format a booking's date and time into a human-readable string.
+ * Example: "Oct 15, 2025 at 2:00 PM"
+ */
+export function formatBookingDateTime(
+  booking: Pick<Booking, "bookingDate" | "startTime">,
+  locale = "en-US"
+): string {
+  try {
+    const d = new Date(`${booking.bookingDate}T${booking.startTime}`);
+    return d.toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }) + " at " + d.toLocaleTimeString(locale, {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch (e) {
+    return `${booking.bookingDate} ${booking.startTime}`;
+  }
+}
+
+/**
+ * Get a localized/friendly label for a booking status.
+ */
+export function getBookingStatusLabel(status: string): string {
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "confirmed":
+      return "Confirmed";
+    case "cancelled":
+      return "Cancelled";
+    case "completed":
+      return "Completed";
+    case "no_show":
+      return "No Show";
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1);
+  }
+}
+
+/**
+ * Mirror of getEffectivePrice for products.
+ * Returns the effective price of a booking service.
+ */
+export function getEffectiveBookingPrice(service: Pick<BookingService, "price">): number {
+  return Number(service.price || 0);
 }

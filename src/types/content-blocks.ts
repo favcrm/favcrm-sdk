@@ -66,6 +66,22 @@ export type EmbedBlock = ContentBlockBase<'embed', {
 	aspectRatio?: string;
 }>;
 
+export type HtmlBlock = ContentBlockBase<'html', {
+	/** Sanitized HTML fragment. Active content is rejected by core validators. */
+	html: string;
+}>;
+
+export type YoutubeBlock = ContentBlockBase<'youtube', {
+	/** Canonical 11-character YouTube video id. */
+	videoId: string;
+	/** Optional original YouTube URL for editor provenance. */
+	url?: string;
+	title?: string;
+	startSeconds?: number;
+	/** CSS aspect-ratio token, e.g. "16/9". */
+	aspectRatio?: string;
+}>;
+
 // ─── Extension blocks ──────────────────────────────────────────────────────
 
 export type FileBlock = ContentBlockBase<'file', {
@@ -129,6 +145,8 @@ export type AnyBlock =
 	| CodeBlock
 	| DividerBlock
 	| EmbedBlock
+	| HtmlBlock
+	| YoutubeBlock
 	| FileBlock
 	| FaqBlock
 	| CalloutBlock
