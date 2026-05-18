@@ -38,6 +38,11 @@ import type {
   PromotionValidationResponse,
 } from "./types/promotion.js";
 import type { Invoice, InvoiceDetail } from "./types/invoice.js";
+import type {
+  DocumentSigningData,
+  DocumentSignaturePayload,
+  DocumentSignatureResult,
+} from "./types/document.js";
 import type { CmsPage } from "./types/cms.js";
 import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
@@ -107,6 +112,7 @@ export class FavCRM {
   readonly payments: PaymentsClient;
   readonly promotions: PromotionsClient;
   readonly invoices: InvoicesClient;
+  readonly documents: DocumentsClient;
   readonly cms: CmsClient;
   readonly blog: BlogClient;
   readonly packages: PackagesClient;
@@ -126,6 +132,7 @@ export class FavCRM {
     this.payments = new PaymentsClient(this);
     this.promotions = new PromotionsClient(this);
     this.invoices = new InvoicesClient(this);
+    this.documents = new DocumentsClient(this);
     this.cms = new CmsClient(this);
     this.blog = new BlogClient(this);
     this.packages = new PackagesClient(this);
@@ -630,6 +637,21 @@ class InvoicesClient {
 
   get(id: string): Promise<InvoiceDetail> {
     return this.sdk.request("GET", `/invoices/${id}`);
+  }
+}
+
+class DocumentsClient {
+  constructor(private sdk: FavCRM) {}
+
+  getSigningToken(token: string): Promise<DocumentSigningData> {
+    return this.sdk.request("GET", `/document-signing/${token}`);
+  }
+
+  sign(
+    token: string,
+    data: DocumentSignaturePayload,
+  ): Promise<DocumentSignatureResult> {
+    return this.sdk.request("POST", `/document-signing/${token}/sign`, { body: data });
   }
 }
 

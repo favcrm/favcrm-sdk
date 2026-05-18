@@ -91,6 +91,13 @@ export type {
   InvoiceDetail,
 } from "./types/invoice.js";
 
+// Types — Documents
+export type {
+  DocumentSigningData,
+  DocumentSignaturePayload,
+  DocumentSignatureResult,
+} from "./types/document.js";
+
 // Types — Blog
 export type { BlogCategory, BlogPostListItem, BlogPost } from "./types/blog.js";
 

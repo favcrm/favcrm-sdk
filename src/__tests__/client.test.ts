@@ -558,6 +558,27 @@ describe('FavCRM Client', () => {
     });
   });
 
+  describe('documents', () => {
+    it('gets a public signing token', async () => {
+      const fetch = mockFetch(envelope({ documentId: 'doc-1' }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.documents.getSigningToken('tok-1');
+      expect(fetch.mock.calls[0][0]).toContain('/document-signing/tok-1');
+    });
+
+    it('submits a public document signature', async () => {
+      const fetch = mockFetch(envelope({ documentId: 'doc-1' }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.documents.sign('tok-1', {
+        signature: { type: 'typed', data: 'Ada Lovelace' },
+        agreedToTerms: true,
+        customerName: 'Ada Lovelace',
+      });
+      expect(fetch.mock.calls[0][0]).toContain('/document-signing/tok-1/sign');
+      expect(fetch.mock.calls[0][1].method).toBe('POST');
+    });
+  });
+
   describe('contact', () => {
     it('submit sends POST to /contact', async () => {
       const fetch = mockFetch(envelope({ conversationId: 'conv-1', messageId: 'msg-1' }));
