@@ -128,6 +128,23 @@ export type ProductRefBlock = ContentBlockBase<'product', {
 	layout?: 'card' | 'inline';
 }>;
 
+/**
+ * Layout container. Places child blocks in side-by-side columns.
+ * One level deep only: child blocks must not contain another `columns` block.
+ */
+export type ColumnsBlock = ContentBlockBase<'columns', {
+	columns: {
+		/** Flex ratio for this column. Defaults to equal split. */
+		span?: number;
+		/** Child blocks. Any core block except `columns`. */
+		blocks: AnyBlock[];
+	}[];
+	/** Stack to one column below this viewport width. Default "768px". */
+	stackBelow?: string;
+	/** Vertical alignment of columns. Default "start". */
+	align?: 'start' | 'center' | 'stretch';
+}>;
+
 // ─── Forward-compat fallback ────────────────────────────────────────────────
 
 /**
@@ -154,6 +171,7 @@ export type AnyBlock =
 	| CtaBlock
 	| AccordionBlock
 	| ProductRefBlock
+	| ColumnsBlock
 	| UnknownBlock;
 
 /** Discriminator map. Useful for renderer registries: `Record<BlockType, Component>`. */

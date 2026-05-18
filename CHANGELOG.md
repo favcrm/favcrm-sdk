@@ -2,6 +2,14 @@
 
 All notable changes to @favcrm/sdk are documented in this file.
 
+## 1.4.0 (2026-05-18)
+
+### New
+
+- **Content blocks layout support** — added the `columns` container block,
+  recursive registry validation for container plugins, and `flattenBlocks()`
+  for layout-agnostic renderers, excerpts, and HTML previews.
+
 ## 1.2.0 (2026-05-04)
 
 ### New

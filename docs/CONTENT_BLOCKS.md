@@ -13,6 +13,9 @@ render via a renderer registry.
   in API (strict, write-path enforcement); lenient parse on read.
 - Plugins: blocks register `{ defaults, validate, migrate }`. Editor specs
   and renderers live in companion packages keyed by `type`.
+- Layout-aware pages can use the `columns` container block. Layout-agnostic
+  consumers should call `flattenBlocks(blocks)` before rendering text previews,
+  excerpts, search documents, or agent views.
 
 ## Why this shape
 
@@ -88,6 +91,7 @@ Block-specific data lives in `data`. The envelope is invariant.
 | `cta`         | Call-to-action button         | Style enum                                   |
 | `accordion`   | Generic collapsible list      | `semantic: 'faq'` triggers FAQPage JSON-LD   |
 | `product`     | Reference to a Product by slug | Server resolves on render                    |
+| `columns`     | Layout container              | 2-4 child block arrays, one nesting level    |
 
 ## Adding a new block type
 
@@ -108,6 +112,8 @@ Block-specific data lives in `data`. The envelope is invariant.
    };
    // append to CORE_BLOCKS
    ```
+   For container blocks, add `container.childArrays` so the registry can
+   recursively validate nested block arrays and set `container.maxDepth`.
 
 3. **API schema mirror** — add to
    `apps/api/src/schemas/content-blocks.ts`:
@@ -205,6 +211,32 @@ reference implementation. `BlockRenderer.svelte` dispatches by `type`
 to per-type components; unknown types are silently skipped (forward
 compat).
 
+## Layout containers
+
+`columns` is a normal block whose payload owns nested child block arrays:
+
+```ts
+type ColumnsBlock = ContentBlockBase<'columns', {
+  columns: { span?: number; blocks: AnyBlock[] }[];
+  stackBelow?: string;
+  align?: 'start' | 'center' | 'stretch';
+}>;
+```
+
+Rules:
+
+- `columns` must contain 2-4 columns.
+- `span` is a positive flex ratio.
+- Child blocks validate recursively.
+- `columns` may not appear inside another `columns` block.
+
+Renderers fall into two classes:
+
+- Layout-aware page renderers handle `type === 'columns'` by rendering a
+  responsive grid/flex row and recursively rendering each column's blocks.
+- Layout-agnostic renderers call `flattenBlocks(blocks)` once and render the
+  returned linear list. Column content appears stacked instead of being lost.
+
 ## File upload
 
 `POST /cms/posts/:id/upload-media` returns full file metadata sized
@@ -267,7 +299,7 @@ import {
   paragraphPlugin, headingPlugin, /* … */
 
   // Legacy adapters
-  htmlToBlocks, blocksToHtmlPreview, blocksToExcerpt,
+  htmlToBlocks, blocksToHtmlPreview, blocksToExcerpt, flattenBlocks,
 } from '@favcrm/sdk';
 
 const registry = createDefaultRegistry();

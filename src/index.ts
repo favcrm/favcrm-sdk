@@ -334,6 +334,7 @@ export type {
   CtaBlock,
   AccordionBlock,
   ProductRefBlock,
+  ColumnsBlock,
   UnknownBlock,
 } from "./types/content-blocks.js";
 
@@ -360,6 +361,7 @@ export {
   ctaPlugin,
   accordionPlugin,
   productRefPlugin,
+  columnsPlugin,
 } from "./content-blocks/index.js";
 
 export type {
@@ -372,4 +374,5 @@ export {
   htmlToBlocks,
   blocksToHtmlPreview,
   blocksToExcerpt,
+  flattenBlocks,
 } from "./content-blocks/legacy.js";

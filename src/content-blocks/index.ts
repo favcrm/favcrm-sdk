@@ -35,6 +35,7 @@ export {
 	htmlToBlocks,
 	blocksToHtmlPreview,
 	blocksToExcerpt,
+	flattenBlocks,
 } from "./legacy.js";
 
 export {
@@ -56,6 +57,7 @@ export {
 	ctaPlugin,
 	accordionPlugin,
 	productRefPlugin,
+	columnsPlugin,
 } from "./core-plugins.js";
 
 import { BlockRegistry, type BlockPlugin } from "./registry.js";

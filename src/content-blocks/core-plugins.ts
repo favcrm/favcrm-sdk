@@ -31,6 +31,7 @@ import type {
 	CtaBlock,
 	AccordionBlock,
 	ProductRefBlock,
+	ColumnsBlock,
 } from "../types/content-blocks.js";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -64,6 +65,10 @@ function isYoutubeUrl(value: string): boolean {
 	} catch {
 		return false;
 	}
+}
+
+function isCssLength(value: string): boolean {
+	return /^(0|[0-9]+(\.[0-9]+)?(px|rem|em|vw|vh|%))$/.test(value);
 }
 
 // ─── core plugins ───────────────────────────────────────────────────────────
@@ -371,6 +376,59 @@ export const productRefPlugin: BlockPlugin<"product", ProductRefBlock["data"]> =
 	},
 };
 
+const COLUMN_ALIGNS = ["start", "center", "stretch"] as const;
+export const columnsPlugin: BlockPlugin<"columns", ColumnsBlock["data"]> = {
+	type: "columns",
+	version: 1,
+	defaults: () => ({
+		columns: [{ blocks: [] }, { blocks: [] }],
+		stackBelow: "768px",
+		align: "start",
+	}),
+	validate: (raw) => {
+		if (!v.isObject(raw)) return err("columns.data must be object");
+		const { columns, stackBelow, align } = raw as {
+			columns?: unknown; stackBelow?: unknown; align?: unknown;
+		};
+		if (!Array.isArray(columns) || columns.length < 2 || columns.length > 4) {
+			return err("expected 2–4 columns");
+		}
+		const validatedColumns: ColumnsBlock["data"]["columns"] = [];
+		for (let i = 0; i < columns.length; i++) {
+			const column = columns[i];
+			if (!v.isObject(column)) return err(`columns[${i}] must be object`);
+			const { span, blocks } = column as { span?: unknown; blocks?: unknown };
+			if (!Array.isArray(blocks)) return err(`columns[${i}]: blocks must be an array`);
+			if (span !== undefined && (!v.isNumber(span) || span <= 0)) {
+				return err(`columns[${i}]: span must be > 0`);
+			}
+			validatedColumns.push({
+				...(span !== undefined ? { span } : {}),
+				blocks: blocks as ColumnsBlock["data"]["columns"][number]["blocks"],
+			});
+		}
+		if (stackBelow !== undefined && (!v.isString(stackBelow) || !isCssLength(stackBelow))) {
+			return err("invalid stackBelow");
+		}
+		if (align !== undefined && !v.isOneOf(align, COLUMN_ALIGNS)) {
+			return err("invalid align");
+		}
+		return ok({
+			columns: validatedColumns,
+			...(stackBelow !== undefined ? { stackBelow } : {}),
+			...(align !== undefined ? { align } : {}),
+		});
+	},
+	container: {
+		childArrays: (data) =>
+			(data as ColumnsBlock["data"]).columns.map((column, i) => ({
+				path: `columns[${i}].blocks`,
+				blocks: column.blocks,
+			})),
+		maxDepth: 1,
+	},
+};
+
 export const CORE_BLOCKS: BlockPlugin[] = [
 	paragraphPlugin,
 	headingPlugin,
@@ -389,4 +447,5 @@ export const CORE_BLOCKS: BlockPlugin[] = [
 	ctaPlugin,
 	accordionPlugin,
 	productRefPlugin,
+	columnsPlugin,
 ];

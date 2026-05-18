@@ -28,6 +28,15 @@ export interface BlockPlugin<K extends string = string, D = unknown> {
 	 */
 	validate: (data: unknown) => ValidationResult<D>;
 	/**
+	 * Declares nested block arrays owned by this block. The registry validates
+	 * those children recursively after this plugin's own payload validation.
+	 */
+	container?: {
+		childArrays: (data: unknown) => { path: string; blocks: AnyBlock[] }[];
+		/** Number of nested container levels allowed below the top level. */
+		maxDepth: number;
+	};
+	/**
 	 * Optional migrator. Called when a stored block's `version` is lower than
 	 * the plugin's current `version`. Receives the old data and the version
 	 * it was stored at. Must return data conforming to the current version.
@@ -104,6 +113,10 @@ export class BlockRegistry {
 	 * `UnknownBlock` so reads survive forward compatibility scenarios.
 	 */
 	validateBlock(raw: unknown): ValidationResult<AnyBlock> {
+		return this.validateBlockAt(raw, 0, "");
+	}
+
+	private validateBlockAt(raw: unknown, depth: number, path: string): ValidationResult<AnyBlock> {
 		if (!v.isObject(raw)) return { ok: false, error: "block must be an object" };
 		const { id, type, version, data } = raw as Partial<ContentBlockBase<string, unknown>>;
 		if (!v.isNonEmptyString(id)) return { ok: false, error: "block.id is required" };
@@ -130,6 +143,21 @@ export class BlockRegistry {
 
 		const validated = plugin.validate(payload);
 		if (!validated.ok) return { ok: false, error: `${type}: ${validated.error}` };
+
+		if (plugin.container) {
+			if (depth >= plugin.container.maxDepth) {
+				return { ok: false, error: `${type}: nesting exceeds maxDepth` };
+			}
+			for (const childArray of plugin.container.childArrays(validated.data)) {
+				for (let i = 0; i < childArray.blocks.length; i++) {
+					const childPath = joinPath(path, `${childArray.path}[${i}]`);
+					const child = this.validateBlockAt(childArray.blocks[i], depth + 1, childPath);
+					if (!child.ok) {
+						return { ok: false, error: `${childPath}: ${child.error}` };
+					}
+				}
+			}
+		}
 
 		return {
 			ok: true,
@@ -198,4 +226,8 @@ export class BlockRegistry {
 	serialize(blocks: AnyBlock[]): string {
 		return JSON.stringify(blocks);
 	}
+}
+
+function joinPath(parent: string, child: string): string {
+	return parent ? `${parent}.${child}` : child;
 }

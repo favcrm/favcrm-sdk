@@ -13,6 +13,25 @@ import type { AnyBlock } from "../types/content-blocks.js";
 import { makeBlockId } from "./index.js";
 
 /**
+ * Depth-first flatten of a block tree into a linear AnyBlock[]. Container
+ * blocks are replaced by their children in order. Use this in renderers and
+ * tools that do not understand layout.
+ */
+export function flattenBlocks(blocks: AnyBlock[]): AnyBlock[] {
+	const out: AnyBlock[] = [];
+	for (const block of blocks) {
+		if ("__unknown" in block || block.type !== "columns") {
+			out.push(block);
+			continue;
+		}
+		for (const column of block.data.columns) {
+			out.push(...flattenBlocks(column.blocks));
+		}
+	}
+	return out;
+}
+
+/**
  * Compatibility helper for callers that still start with plain HTML/text.
  *
  * Deprecated for new write paths: prefer authoring `AnyBlock[]` directly.
@@ -38,7 +57,7 @@ export function htmlToBlocks(html: string): AnyBlock[] {
  */
 export function blocksToHtmlPreview(blocks: AnyBlock[]): string {
 	const parts: string[] = [];
-	for (const b of blocks) {
+	for (const b of flattenBlocks(blocks)) {
 		// Skip forward-compat unknown blocks — `data` is `unknown` there.
 		if ("__unknown" in b) continue;
 		if (b.type === "paragraph") {
@@ -105,7 +124,7 @@ function escapeHtml(s: string): string {
  * service for `autoExcerpt`. Strips HTML tags from paragraph blocks.
  */
 export function blocksToExcerpt(blocks: AnyBlock[], maxLen = 160): string | null {
-	for (const b of blocks) {
+	for (const b of flattenBlocks(blocks)) {
 		if ("__unknown" in b) continue;
 		if (b.type === "paragraph") {
 			const text = stripTags(b.data.html).trim();

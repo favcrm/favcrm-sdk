@@ -7,6 +7,7 @@ import {
 	htmlToBlocks,
 	blocksToExcerpt,
 	blocksToHtmlPreview,
+	flattenBlocks,
 } from "../content-blocks/index.js";
 import { paragraphPlugin } from "../content-blocks/core-plugins.js";
 import { htmlToBlocks as htmlToBlocksLegacy } from "../content-blocks/legacy.js";
@@ -202,6 +203,88 @@ describe("BlockRegistry — plugin validation", () => {
 		});
 		expect(result.ok).toBe(false);
 		if (!result.ok) expect(result.error).toContain("youtube.url");
+	});
+
+	it("validates columns and child blocks recursively", () => {
+		const result = reg.validateBlock({
+			id: "cols",
+			type: "columns",
+			version: 1,
+			data: {
+				columns: [
+					{
+						span: 2,
+						blocks: [
+							{ id: "p", type: "paragraph", version: 1, data: { html: "Left" } },
+						],
+					},
+					{
+						blocks: [
+							{ id: "h", type: "heading", version: 1, data: { level: 2, text: "Right" } },
+						],
+					},
+				],
+				stackBelow: "768px",
+				align: "center",
+			},
+		});
+		expect(result.ok).toBe(true);
+	});
+
+	it("rejects nested columns with a pathful error", () => {
+		const result = reg.validateBlock({
+			id: "cols",
+			type: "columns",
+			version: 1,
+			data: {
+				columns: [
+					{
+						blocks: [
+							{
+								id: "nested",
+								type: "columns",
+								version: 1,
+								data: {
+									columns: [
+										{ blocks: [] },
+										{ blocks: [] },
+									],
+								},
+							},
+						],
+					},
+					{ blocks: [] },
+				],
+			},
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error).toContain("columns[0].blocks[0]");
+			expect(result.error).toContain("nesting exceeds maxDepth");
+		}
+	});
+
+	it("rejects invalid children inside columns with a pathful error", () => {
+		const result = reg.validateBlock({
+			id: "cols",
+			type: "columns",
+			version: 1,
+			data: {
+				columns: [
+					{
+						blocks: [
+							{ id: "bad", type: "heading", version: 1, data: { level: 9, text: "Bad" } },
+						],
+					},
+					{ blocks: [] },
+				],
+			},
+		});
+		expect(result.ok).toBe(false);
+		if (!result.ok) {
+			expect(result.error).toContain("columns[0].blocks[0]");
+			expect(result.error).toContain("heading.level");
+		}
 	});
 });
 
@@ -399,6 +482,34 @@ describe("legacy helpers", () => {
 			{ id: "1", type: "paragraph", version: 1, data: { html: "First\nline\n\nSecond" } },
 		]);
 		expect(html).toBe("<p>First<br>line</p>\n<p>Second</p>");
+	});
+
+	it("flattenBlocks replaces columns with children in order", () => {
+		const blocks: AnyBlock[] = [
+			{
+				id: "cols",
+				type: "columns",
+				version: 1,
+				data: {
+					columns: [
+						{
+							blocks: [
+								{ id: "a", type: "paragraph", version: 1, data: { html: "A" } },
+							],
+						},
+						{
+							blocks: [
+								{ id: "b", type: "heading", version: 1, data: { level: 2, text: "B" } },
+							],
+						},
+					],
+				},
+			},
+		];
+
+		expect(flattenBlocks(blocks).map((block) => block.id)).toEqual(["a", "b"]);
+		expect(blocksToHtmlPreview(blocks)).toContain("A");
+		expect(blocksToHtmlPreview(blocks)).toContain("<h2>B</h2>");
 	});
 
 	it("blocksToExcerpt extracts text from first paragraph", () => {
