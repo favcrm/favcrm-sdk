@@ -114,6 +114,27 @@ describe("createWorkspaceResolver", () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
+  it("returns null when the request times out", async () => {
+    vi.useFakeTimers();
+    // A fetch that never settles until its abort signal fires.
+    const fetchFn = vi
+      .fn()
+      .mockImplementation((_url: string, init?: { signal?: AbortSignal }) => {
+        return new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          );
+        });
+      });
+    const resolver = createWorkspaceResolver({ apiUrl: API, timeoutMs: 2000 });
+
+    const pending = resolver.resolve("slow.example.com", fetchFn);
+    await vi.advanceTimersByTimeAsync(2500);
+
+    await expect(pending).resolves.toBeNull();
+    vi.useRealTimers();
+  });
+
   it("tolerates a trailing slash on apiUrl", async () => {
     const fetchFn = okFetch("company-abc");
     const resolver = createWorkspaceResolver({ apiUrl: `${API}/` });

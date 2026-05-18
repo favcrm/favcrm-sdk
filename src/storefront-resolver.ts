@@ -33,6 +33,9 @@ const LOCAL_HOSTS = new Set([
 /** Default cache lifetime for a resolution (hit or miss). */
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
+/** Default per-request fetch timeout. */
+const DEFAULT_TIMEOUT_MS = 3000;
+
 export interface WorkspaceResolverOptions {
   /** FavCRM API base URL, e.g. `https://api.favcrm.io`. Trailing slash optional. */
   apiUrl: string;
@@ -41,6 +44,14 @@ export interface WorkspaceResolverOptions {
    * A miss is cached too, so an unregistered host is not re-fetched per request.
    */
   ttlMs?: number;
+  /**
+   * Abort the resolve request after this many ms. Default 3000.
+   *
+   * The resolver runs inside a server hook before the page renders, so a hung
+   * API would otherwise stall every cold request. On timeout the resolution is
+   * treated as a miss and the caller falls back to its env var / demo mode.
+   */
+  timeoutMs?: number;
 }
 
 export interface WorkspaceResolver {
@@ -72,6 +83,7 @@ export function createWorkspaceResolver(
 ): WorkspaceResolver {
   const apiUrl = options.apiUrl.replace(/\/$/, "");
   const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const cache = new Map<
     string,
     { companyId: string | null; expiresAt: number }
@@ -87,11 +99,13 @@ export function createWorkspaceResolver(
 
       const doFetch = fetchFn ?? globalThis.fetch;
       let companyId: string | null = null;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const url = `${apiUrl}/v6/customer-portal/storefront/resolve-domain?hostname=${encodeURIComponent(
           host,
         )}`;
-        const res = await doFetch(url);
+        const res = await doFetch(url, { signal: controller.signal });
         if (res.ok) {
           const body = (await res.json()) as {
             data?: { companyId?: string };
@@ -99,8 +113,11 @@ export function createWorkspaceResolver(
           companyId = body.data?.companyId ?? null;
         }
       } catch {
-        // Network/parse failure — treat as unresolved so the caller falls back.
+        // Network/parse failure or timeout — treat as unresolved so the
+        // caller falls back.
         companyId = null;
+      } finally {
+        clearTimeout(timer);
       }
 
       cache.set(host, { companyId, expiresAt: Date.now() + ttlMs });
