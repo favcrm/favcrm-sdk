@@ -43,6 +43,11 @@ import type {
   DocumentSignaturePayload,
   DocumentSignatureResult,
 } from "./types/document.js";
+import type {
+  SurveyPublicView,
+  SurveyResponseResult,
+  SurveyResponseSubmission,
+} from "./types/survey.js";
 import type { CmsPage } from "./types/cms.js";
 import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
@@ -121,6 +126,7 @@ export class FavCRM {
   readonly auth: AuthClient;
   readonly walletPasses: WalletPassesClient;
   readonly gifts: GiftsClient;
+  readonly surveys: SurveysClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -140,6 +146,7 @@ export class FavCRM {
     this.contact = new ContactClient(this);
     this.walletPasses = new WalletPassesClient(this);
     this.gifts = new GiftsClient(this);
+    this.surveys = new SurveysClient(this);
   }
 
   get companyId(): string {
@@ -652,6 +659,32 @@ class DocumentsClient {
     data: DocumentSignaturePayload,
   ): Promise<DocumentSignatureResult> {
     return this.sdk.request("POST", `/document-signing/${token}/sign`, { body: data });
+  }
+}
+
+class SurveysClient {
+  constructor(private sdk: FavCRM) {}
+
+  get(slug: string): Promise<SurveyPublicView> {
+    return this.sdk.request("GET", `/surveys/${slug}`);
+  }
+
+  getByToken(token: string): Promise<SurveyPublicView> {
+    return this.sdk.request("GET", `/surveys/token/${token}`);
+  }
+
+  submit(
+    surveyId: string,
+    data: SurveyResponseSubmission,
+  ): Promise<SurveyResponseResult> {
+    return this.sdk.request("POST", `/surveys/${surveyId}/responses`, { body: data });
+  }
+
+  submitByToken(
+    token: string,
+    data: SurveyResponseSubmission,
+  ): Promise<SurveyResponseResult> {
+    return this.sdk.request("POST", `/surveys/token/${token}/responses`, { body: data });
   }
 }
 

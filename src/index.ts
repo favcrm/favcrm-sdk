@@ -98,6 +98,24 @@ export type {
   DocumentSignatureResult,
 } from "./types/document.js";
 
+// Types — Survey
+export type {
+  Survey,
+  SurveyInvitation,
+  SurveyPublicView,
+  SurveyQuestionBlock,
+  SurveyQuestionBlockType,
+  SurveyQuestionOption,
+  SurveyQuestionValidation,
+  SurveyQuestionBranch,
+  SurveySettings,
+  SurveyStatus,
+  SurveyVisibilityMode,
+  SurveyResponseStatus,
+  SurveyResponseSubmission,
+  SurveyResponseResult,
+} from "./types/survey.js";
+
 // Types — Blog
 export type { BlogCategory, BlogPostListItem, BlogPost } from "./types/blog.js";
 
