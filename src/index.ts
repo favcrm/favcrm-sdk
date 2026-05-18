@@ -376,3 +376,10 @@ export {
   blocksToExcerpt,
   flattenBlocks,
 } from "./content-blocks/legacy.js";
+
+// Storefront workspace resolver — hostname → companyId
+export { createWorkspaceResolver } from "./storefront-resolver.js";
+export type {
+  WorkspaceResolver,
+  WorkspaceResolverOptions,
+} from "./storefront-resolver.js";
