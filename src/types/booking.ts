@@ -28,6 +28,7 @@ export interface BookingService {
   id: string;
   name: string;
   description: string | null;
+  address: string | null;
   type: string;
   durationMinutes: number;
   capacity: number;
@@ -35,6 +36,7 @@ export interface BookingService {
   displayPrice: string | null;
   currency: string;
   coverImage: string | null;
+  sortOrder: number;
   requiresStaff: boolean;
   requiresResource: boolean;
   paymentRequired: boolean;
