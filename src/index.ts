@@ -408,3 +408,31 @@ export type {
   WorkspaceResolver,
   WorkspaceResolverOptions,
 } from "./storefront-resolver.js";
+
+// Types — Assistant agents (AI employees)
+export type {
+  AssistantAgentStatus,
+  AssistantAgentRole,
+  AssistantAgentCapabilities,
+  AssistantAgent,
+  AssistantAgentWithRole,
+  CreateAgentInput,
+  BootstrapStatus,
+  BootstrapResult,
+  AssistantAgentTemplate,
+} from "./types/assistant-agent.js";
+
+// Types — Agent channel bindings
+export type {
+  AgentReplyPolicy,
+  AgentActiveHours,
+  AgentBindingChannel,
+  AgentChannelBinding,
+  UpsertAgentChannelBindingInput,
+} from "./types/agent-channel-binding.js";
+
+// Types — Assistant usage
+export type {
+  AssistantUsageSummary,
+  AssistantUsageAgentBreakdownRow,
+} from "./types/assistant-usage.js";
