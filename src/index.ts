@@ -158,7 +158,7 @@ export type {
 export type { ServicePackageOrder } from "./types/service-package.js";
 
 // Types — CMS
-export type { CmsBlock, CmsPage } from "./types/cms.js";
+export type { CmsBlock, CmsPage, CmsPageSummary } from "./types/cms.js";
 
 // Types — Portal
 export type {

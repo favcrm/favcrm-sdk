@@ -48,7 +48,7 @@ import type {
   SurveyResponseResult,
   SurveyResponseSubmission,
 } from "./types/survey.js";
-import type { CmsPage } from "./types/cms.js";
+import type { CmsPage, CmsPageSummary } from "./types/cms.js";
 import type { BlogPost, BlogPostListItem } from "./types/blog.js";
 import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext } from "./types/review.js";
 import type { ServicePackageOrder } from "./types/service-package.js";
@@ -691,7 +691,7 @@ class SurveysClient {
 class CmsClient {
   constructor(private sdk: FavCRM) {}
 
-  async listPages(): Promise<CmsPage[]> {
+  async listPages(): Promise<CmsPageSummary[]> {
     const res = await this.sdk.request<any>("GET", "/cms/pages");
     return Array.isArray(res) ? res : res?.items ?? [];
   }

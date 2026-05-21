@@ -262,6 +262,14 @@ if (validation.valid) {
 
 ---
 
+## CMS Pages
+
+Use `sdk.cms.listPages()` for navigation and listing screens. It returns `CmsPageSummary[]`, which does not include page `blocks`.
+
+Use `sdk.cms.getPage(slug)` when rendering page content. It returns the full `CmsPage`, including `blocks`.
+
+---
+
 ## Error Handling
 
 All SDK methods throw `FavCRMError` on failure:
