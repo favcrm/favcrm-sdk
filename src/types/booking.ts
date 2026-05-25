@@ -152,6 +152,11 @@ export interface BookingSettings {
    * blocked. `null` = no cutoff (allow until start). 0 also disables cutoff.
    */
   memberCancellationCutoffHours: number | null;
+  /**
+   * Minutes before a slot start after which customer booking is blocked.
+   * `null` = use the service duration as the cutoff. 0 disables the cutoff.
+   */
+  minimumAdvanceBookingMinutes: number | null;
 }
 
 /**
@@ -166,6 +171,7 @@ export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {
   hideUnavailableTimeslots: false,
   allowMemberCancellation: true,
   memberCancellationCutoffHours: null,
+  minimumAdvanceBookingMinutes: null,
 };
 
 export interface CreateBookingRequest {

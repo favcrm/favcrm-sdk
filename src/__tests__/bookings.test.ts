@@ -32,6 +32,10 @@ describe("DEFAULT_BOOKING_SETTINGS", () => {
   it("shows unavailable timeslots by default for backward compatibility", () => {
     expect(DEFAULT_BOOKING_SETTINGS.hideUnavailableTimeslots).toBe(false);
   });
+
+  it("falls back to service duration for minimum advance booking by default", () => {
+    expect(DEFAULT_BOOKING_SETTINGS.minimumAdvanceBookingMinutes).toBeNull();
+  });
 });
 
 describe("canMemberCancelBooking", () => {
