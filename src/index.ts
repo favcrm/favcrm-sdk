@@ -80,6 +80,10 @@ export type {
   BookingConfig,
   BookingSettings,
   ResourceItem,
+  VenueScheduleSession,
+  VenueScheduleDay,
+  ScheduleOffering,
+  ScheduleGrid,
 } from "./types/booking.js";
 export { DEFAULT_BOOKING_SETTINGS } from "./types/booking.js";
 
@@ -213,7 +217,15 @@ export type {
 } from "./events.js";
 
 // Booking logic
-export { isFreeSpace, canMemberCancelBooking } from "./bookings.js";
+export {
+  isFreeSpace,
+  canMemberCancelBooking,
+  scheduleSlotParam,
+  extractScheduleOfferings,
+  filterScheduleDays,
+  buildScheduleGrid,
+  countScheduleSessions,
+} from "./bookings.js";
 export type { MemberCancelEligibility } from "./bookings.js";
 
 // Member logic

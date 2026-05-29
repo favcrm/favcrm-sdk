@@ -121,6 +121,48 @@ export interface ResourceItem {
   resourceType: string;
 }
 
+/**
+ * One session in the whole-venue timetable
+ * (`GET /marketplace/venues/{id}/schedule`). Names only — no pricing or
+ * remaining capacity; tier price + the price-locked quote resolve later in the
+ * per-service slots/quote path when the customer actually books.
+ */
+export interface VenueScheduleSession {
+  offeringId: string;
+  offeringName: string;
+  offeringType: "service" | "event";
+  scheduleId: string | null;
+  sessionId: string | null;
+  /** Service: "YYYY-MM-DD HH:MM". Event: the session's stored datetime. */
+  start: string;
+  end: string | null;
+  available: boolean;
+  durationMinutes: number | null;
+}
+
+/** One day of the whole-venue timetable, with every offering's sessions. */
+export interface VenueScheduleDay {
+  date: string; // YYYY-MM-DD
+  weekday: string; // Sun..Sat
+  bookable: boolean;
+  sessions: VenueScheduleSession[];
+}
+
+/** An offering surfaced in the timetable, for filter chips. */
+export interface ScheduleOffering {
+  offeringId: string;
+  name: string;
+}
+
+/**
+ * Timetable laid out as a grid: a sorted list of `HH:MM` row labels and an
+ * index from `"date|HH:MM"` to the sessions in that cell.
+ */
+export interface ScheduleGrid {
+  rows: string[];
+  index: Map<string, VenueScheduleSession[]>;
+}
+
 export interface BookingConfig {
   advanceBookingDays: number | null;
   maxBookableTimeslots: number | null;

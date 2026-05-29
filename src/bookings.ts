@@ -1,4 +1,12 @@
-import type { BookingService, BookingSettings, Booking } from "./types/booking.js";
+import type {
+  BookingService,
+  BookingSettings,
+  Booking,
+  VenueScheduleDay,
+  VenueScheduleSession,
+  ScheduleOffering,
+  ScheduleGrid,
+} from "./types/booking.js";
 
 /**
  * A space (booking service) is "free" only when both price is zero AND the
@@ -116,4 +124,74 @@ export function getBookingStatusLabel(status: string): string {
  */
 export function getEffectiveBookingPrice(service: Pick<BookingService, "price">): number {
   return Number(service.price || 0);
+}
+
+// ============================================================================
+// Whole-venue timetable (schedule grid) helpers
+//
+// Pure transforms over `GET /marketplace/venues/{id}/schedule` output, used by
+// the member-portal week-grid timetable. No pricing here — names only; price +
+// the price-locked quote resolve later in the per-service /book flow.
+// ============================================================================
+
+/** Extract "HH:MM" from a schedule session `start` ("YYYY-MM-DD HH:MM" or ISO). */
+export function scheduleSlotParam(start: string): string {
+  return start.match(/(\d{2}:\d{2})/)?.[1] ?? start;
+}
+
+/**
+ * Distinct offerings across the whole timetable, in first-seen order — used to
+ * build the filter chips ("All" + one per offering).
+ */
+export function extractScheduleOfferings(
+  days: VenueScheduleDay[],
+): ScheduleOffering[] {
+  const seen = new Map<string, string>();
+  for (const d of days) {
+    for (const s of d.sessions) {
+      if (!seen.has(s.offeringId)) seen.set(s.offeringId, s.offeringName);
+    }
+  }
+  return [...seen.entries()].map(([offeringId, name]) => ({ offeringId, name }));
+}
+
+/**
+ * Narrow each day's sessions to a single offering. `offeringId === null`
+ * returns the days unchanged (the "All" filter).
+ */
+export function filterScheduleDays(
+  days: VenueScheduleDay[],
+  offeringId: string | null,
+): VenueScheduleDay[] {
+  if (!offeringId) return days;
+  return days.map((d) => ({
+    ...d,
+    sessions: d.sessions.filter((s) => s.offeringId === offeringId),
+  }));
+}
+
+/**
+ * Lay the timetable out as a grid: a sorted list of distinct `HH:MM` row
+ * labels and an index from `"date|HH:MM"` to the sessions in that cell. A cell
+ * can hold multiple sessions (different offerings at the same time).
+ */
+export function buildScheduleGrid(days: VenueScheduleDay[]): ScheduleGrid {
+  const times = new Set<string>();
+  const index = new Map<string, VenueScheduleSession[]>();
+  for (const d of days) {
+    for (const s of d.sessions) {
+      const t = scheduleSlotParam(s.start);
+      times.add(t);
+      const key = `${d.date}|${t}`;
+      const bucket = index.get(key);
+      if (bucket) bucket.push(s);
+      else index.set(key, [s]);
+    }
+  }
+  return { rows: [...times].sort(), index };
+}
+
+/** Total session count across all days — for empty-state checks. */
+export function countScheduleSessions(days: VenueScheduleDay[]): number {
+  return days.reduce((n, d) => n + d.sessions.length, 0);
 }
