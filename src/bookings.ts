@@ -29,6 +29,81 @@ export type MemberCancelEligibility =
   | { ok: false; reason: "disabled" }
   | { ok: false; reason: "past_cutoff"; cutoffHours: number };
 
+function normalizeBookingTime(time: string): string {
+  const [hour = "0", minute = "0", second = "0"] = time.split(":");
+  return [
+    hour.padStart(2, "0"),
+    minute.padStart(2, "0"),
+    second.padStart(2, "0"),
+  ].join(":");
+}
+
+function zonedDateTimeToDate(
+  date: string,
+  time: string,
+  timeZone: string,
+): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(
+    `${date}T${normalizeBookingTime(time)}`,
+  );
+  if (!match) return null;
+
+  const [, y, mo, d, h, mi, s] = match;
+  const targetLocalMs = Date.UTC(
+    Number(y),
+    Number(mo) - 1,
+    Number(d),
+    Number(h),
+    Number(mi),
+    Number(s),
+  );
+  let utcMs = targetLocalMs;
+
+  try {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    });
+
+    for (let i = 0; i < 3; i += 1) {
+      const parts = formatter.formatToParts(new Date(utcMs));
+      const get = (type: string) =>
+        Number(parts.find((part) => part.type === type)?.value);
+      const renderedLocalMs = Date.UTC(
+        get("year"),
+        get("month") - 1,
+        get("day"),
+        get("hour"),
+        get("minute"),
+        get("second"),
+      );
+      const delta = renderedLocalMs - targetLocalMs;
+      if (delta === 0) break;
+      utcMs -= delta;
+    }
+  } catch {
+    return null;
+  }
+
+  const result = new Date(utcMs);
+  return Number.isNaN(result.getTime()) ? null : result;
+}
+
+function bookingStartInstant(
+  booking: Pick<{ bookingDate: string; startTime: string }, "bookingDate" | "startTime">,
+  timeZone?: string | null,
+): Date | null {
+  if (timeZone) return zonedDateTimeToDate(booking.bookingDate, booking.startTime, timeZone);
+  const start = new Date(`${booking.bookingDate}T${booking.startTime}`);
+  return Number.isNaN(start.getTime()) ? null : start;
+}
+
 /**
  * Decide whether a member can self-cancel a booking based on merchant policy.
  *
@@ -39,6 +114,7 @@ export type MemberCancelEligibility =
  * @param booking  Minimal booking shape — needs the local date + start time.
  * @param settings Merchant-configured booking settings (the policy bits).
  * @param now      Override for tests. Defaults to wall-clock now.
+ * @param timeZone IANA company timezone for booking wall-clock interpretation.
  */
 export function canMemberCancelBooking(
   booking: Pick<
@@ -53,6 +129,7 @@ export function canMemberCancelBooking(
     "allowMemberCancellation" | "memberCancellationCutoffHours"
   >,
   now: Date = new Date(),
+  timeZone?: string | null,
 ): MemberCancelEligibility {
   if (!settings.allowMemberCancellation) {
     return { ok: false, reason: "disabled" };
@@ -60,8 +137,8 @@ export function canMemberCancelBooking(
 
   const cutoff = settings.memberCancellationCutoffHours;
   if (cutoff != null && cutoff > 0) {
-    const start = new Date(`${booking.bookingDate}T${booking.startTime}`);
-    if (Number.isNaN(start.getTime())) {
+    const start = bookingStartInstant(booking, timeZone);
+    if (!start) {
       // Malformed date — fail open rather than locking out the customer; the
       // status-transition check on the server will still catch invalid states.
       return { ok: true };

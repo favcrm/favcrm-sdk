@@ -88,6 +88,16 @@ describe("canMemberCancelBooking", () => {
     expect(r).toEqual({ ok: false, reason: "past_cutoff", cutoffHours: 24 });
   });
 
+  it("evaluates cutoff in the supplied company timezone", () => {
+    const r = canMemberCancelBooking(
+      booking,
+      { allowMemberCancellation: true, memberCancellationCutoffHours: 24 },
+      new Date("2026-04-30T07:00:00Z"),
+      "Asia/Hong_Kong",
+    );
+    expect(r).toEqual({ ok: false, reason: "past_cutoff", cutoffHours: 24 });
+  });
+
   it("blocks at exactly past the cutoff edge", () => {
     // Edge: now > cutoffMs is the rule, so at cutoffMs itself it should still allow.
     const r = canMemberCancelBooking(
