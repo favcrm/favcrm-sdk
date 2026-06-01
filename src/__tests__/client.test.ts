@@ -252,6 +252,67 @@ describe('FavCRM Client', () => {
     });
   });
 
+  describe('customer ai', () => {
+    it('sends chat requests to the customer portal AI endpoint', async () => {
+      const fetch = mockFetch(envelope({ reply: 'hello' }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.ai.chat({ message: 'hello', conversationId: 'conv-1' });
+      expect(fetch.mock.calls[0][0]).toContain('/ai/chat');
+      expect(fetch.mock.calls[0][1].method).toBe('POST');
+      expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+        message: 'hello',
+        conversation_id: 'conv-1',
+      });
+    });
+
+    it('parses AI stream events', async () => {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(
+            'event: message_start\ndata: {"conversationId":"conv-1"}\n\n' +
+            'event: content_delta\ndata: {"content":"Hi"}\n\n' +
+            'event: tool_call_result\ndata: {"toolCall":{"id":"tc-1","name":"create_shop_cart_draft","status":"completed","summary":"Cart draft ready"}}\n\n' +
+            'event: message_end\ndata: {"conversationId":"conv-1"}\n\n',
+          ));
+          controller.close();
+        },
+      });
+      const fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: stream,
+      });
+      vi.stubGlobal('fetch', fetch);
+      const events: string[] = [];
+      await sdk.ai.streamChat(
+        { message: 'draft a cart' },
+        {
+          onMessageStart: (event) => events.push(`start:${event.conversationId}`),
+          onContentDelta: (event) => events.push(`delta:${event.content}`),
+          onToolCallResult: (event) => events.push(`tool:${event.toolCall.name}`),
+          onMessageEnd: (event) => events.push(`end:${event.conversationId}`),
+        },
+      );
+      expect(events).toEqual([
+        'start:conv-1',
+        'delta:Hi',
+        'tool:create_shop_cart_draft',
+        'end:conv-1',
+      ]);
+    });
+
+    it('manages customer AI conversations', async () => {
+      const fetch = mockFetch(envelope([]));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.ai.listConversations();
+      await sdk.ai.getConversation('conv-1');
+      await sdk.ai.deleteConversation('conv-1');
+      expect(fetch.mock.calls[0][0]).toContain('/ai/conversations');
+      expect(fetch.mock.calls[1][0]).toContain('/ai/conversations/conv-1');
+      expect(fetch.mock.calls[2][1].method).toBe('DELETE');
+    });
+  });
+
   describe('blog', () => {
     it('list serializes type, categoryId, sort, and order params', async () => {
       const fetch = mockFetch(envelope({ items: [], pagination: {} }));

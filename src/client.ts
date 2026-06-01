@@ -73,6 +73,47 @@ export interface FavCRMConfig {
   fetch?: typeof globalThis.fetch;
 }
 
+export interface CustomerAiChatInput {
+  message: string;
+  conversationId?: string;
+}
+
+export interface CustomerAiToolCallStatus {
+  id: string;
+  name: string;
+  status: "running" | "completed" | "failed";
+  summary?: string;
+}
+
+export interface CustomerAiUsage {
+  promptTokens?: number;
+  completionTokens?: number;
+}
+
+export interface CustomerAiStreamHandlers {
+  onMessageStart?: (event: { conversationId: string }) => void;
+  onContentDelta?: (event: { content: string }) => void;
+  onToolCallStart?: (event: { toolCall: CustomerAiToolCallStatus }) => void;
+  onToolCallResult?: (event: { toolCall: CustomerAiToolCallStatus }) => void;
+  onMessageEnd?: (event: { conversationId: string; usage?: CustomerAiUsage }) => void;
+  onError?: (event: { message: string }) => void;
+}
+
+export interface CustomerAiConversation {
+  id: string;
+  title?: string | null;
+  type?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  messages?: Array<{
+    id?: string;
+    role: string;
+    content: string | null;
+    toolCalls?: unknown;
+    createdAt?: string;
+  }>;
+}
+
 export class FavCRMError extends Error {
   status: number;
   code?: string;
@@ -96,9 +137,32 @@ interface RequestOptions {
   params?: Record<string, string>;
 }
 
+interface SseFrame {
+  event: string;
+  data: unknown;
+}
+
 function toQueryString(params: Record<string, string>): string {
   const qs = new URLSearchParams(params).toString();
   return qs ? `?${qs}` : "";
+}
+
+function parseSseFrame(frame: string): SseFrame | null {
+  let event = "message";
+  let rawData = "";
+
+  for (const line of frame.split("\n")) {
+    if (line.startsWith("event:")) event = line.slice(6).trim();
+    if (line.startsWith("data:")) rawData += line.slice(5).trim();
+  }
+
+  if (!rawData) return null;
+
+  try {
+    return { event, data: JSON.parse(rawData) };
+  } catch {
+    return { event, data: { message: rawData } };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +191,7 @@ export class FavCRM {
   readonly walletPasses: WalletPassesClient;
   readonly gifts: GiftsClient;
   readonly surveys: SurveysClient;
+  readonly ai: CustomerAiClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -147,6 +212,7 @@ export class FavCRM {
     this.walletPasses = new WalletPassesClient(this);
     this.gifts = new GiftsClient(this);
     this.surveys = new SurveysClient(this);
+    this.ai = new CustomerAiClient(this);
   }
 
   get companyId(): string {
@@ -245,6 +311,117 @@ export class FavCRM {
       return json.data as T;
     }
     return json as T;
+  }
+
+  /** @internal — used by CustomerAiClient for SSE streams */
+  async requestRaw(
+    method: HttpMethod,
+    path: string,
+    opts?: RequestOptions,
+  ): Promise<Response> {
+    const qs = opts?.params ? toQueryString(opts.params) : "";
+    const url = `${this.config.baseUrl}${this.base}${path}${qs}`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json, text/event-stream",
+      "X-Company-Id": this.config.companyId,
+    };
+    if (this.jwt) headers["Authorization"] = `Bearer ${this.jwt}`;
+    const fetchFn = this.config.fetch ?? globalThis.fetch;
+    const response = await fetchFn(url, {
+      method,
+      headers,
+      body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
+    });
+    if (response.status === 401) {
+      this.config.onUnauthorized?.();
+      throw new FavCRMError(401, "Unauthorized");
+    }
+    if (!response.ok) throw new FavCRMError(response.status, response.statusText);
+    return response;
+  }
+}
+
+class CustomerAiClient {
+  constructor(private sdk: FavCRM) {}
+
+  chat(input: CustomerAiChatInput): Promise<unknown> {
+    return this.sdk.request("POST", "/ai/chat", {
+      body: {
+        message: input.message,
+        conversation_id: input.conversationId,
+      },
+    });
+  }
+
+  async streamChat(
+    input: CustomerAiChatInput,
+    handlers: CustomerAiStreamHandlers,
+  ): Promise<void> {
+    const response = await this.sdk.requestRaw("POST", "/ai/chat/stream", {
+      body: {
+        message: input.message,
+        conversation_id: input.conversationId,
+      },
+    });
+    if (!response.body) return;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    const dispatch = (event: string, data: unknown) => {
+      switch (event) {
+        case "message_start":
+          handlers.onMessageStart?.(data as { conversationId: string });
+          break;
+        case "content_delta":
+          handlers.onContentDelta?.(data as { content: string });
+          break;
+        case "tool_call_start":
+          handlers.onToolCallStart?.(data as { toolCall: CustomerAiToolCallStatus });
+          break;
+        case "tool_call_result":
+          handlers.onToolCallResult?.(data as { toolCall: CustomerAiToolCallStatus });
+          break;
+        case "message_end":
+          handlers.onMessageEnd?.(data as { conversationId: string; usage?: CustomerAiUsage });
+          break;
+        case "error":
+          handlers.onError?.(data as { message: string });
+          break;
+      }
+    };
+
+    const flush = (chunk: string) => {
+      buffer += chunk;
+      let separator = buffer.indexOf("\n\n");
+      while (separator !== -1) {
+        const frame = buffer.slice(0, separator);
+        buffer = buffer.slice(separator + 2);
+        const parsed = parseSseFrame(frame);
+        if (parsed) dispatch(parsed.event, parsed.data);
+        separator = buffer.indexOf("\n\n");
+      }
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      flush(decoder.decode(value, { stream: true }));
+    }
+    flush(decoder.decode());
+  }
+
+  listConversations(): Promise<CustomerAiConversation[]> {
+    return this.sdk.request("GET", "/ai/conversations");
+  }
+
+  getConversation(id: string): Promise<CustomerAiConversation> {
+    return this.sdk.request("GET", `/ai/conversations/${id}`);
+  }
+
+  deleteConversation(id: string): Promise<{ deleted: boolean }> {
+    return this.sdk.request("DELETE", `/ai/conversations/${id}`);
   }
 }
 
