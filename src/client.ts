@@ -8,6 +8,7 @@ import type {
   PaymentMethodOption,
   CreateOrderRequest,
   ShopOrder,
+  ShopOrderPaymentStatus,
   ShopOffer,
   ShopOfferListParams,
 } from "./types/shop.js";
@@ -527,6 +528,10 @@ class ShopClient {
 
   getOrder(orderUuid: string): Promise<ShopOrder> {
     return this.sdk.request("GET", `/shop/orders/${orderUuid}`);
+  }
+
+  getOrderPaymentStatus(orderUuid: string): Promise<ShopOrderPaymentStatus> {
+    return this.sdk.request("GET", `/shop/orders/${orderUuid}/payment-status`);
   }
 
   listProductReviews(slug: string): Promise<{ reviews: ProductReview[]; summary: ReviewSummary }> {

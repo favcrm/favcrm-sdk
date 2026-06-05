@@ -20,6 +20,7 @@ export type {
   ShopOfferProduct,
   ShopOrderItem,
   ShopOrder,
+  ShopOrderPaymentStatus,
   PaymentMethodOption,
   SubscriptionPlan,
   ProductSubscription,

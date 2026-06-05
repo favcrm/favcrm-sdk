@@ -224,6 +224,13 @@ export interface ShopOrder {
   paymentInstructions?: string;
 }
 
+export interface ShopOrderPaymentStatus {
+  orderId: string;
+  orderStatus: string;
+  paymentStatus: string;
+  paidAt: string | null;
+}
+
 export interface SubscriptionPlan {
   id: string;
   productId: number;

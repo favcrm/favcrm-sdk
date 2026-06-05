@@ -250,6 +250,18 @@ describe('FavCRM Client', () => {
       await sdk.shop.getOrder('uuid-1');
       expect(fetch.mock.calls[0][0]).toContain('/shop/orders/uuid-1');
     });
+
+    it('getOrderPaymentStatus', async () => {
+      const fetch = mockFetch(envelope({
+        orderId: 'uuid-1',
+        orderStatus: 'confirmed',
+        paymentStatus: 'completed',
+        paidAt: '2026-06-05T07:00:00.000Z',
+      }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.shop.getOrderPaymentStatus('uuid-1');
+      expect(fetch.mock.calls[0][0]).toContain('/shop/orders/uuid-1/payment-status');
+    });
   });
 
   describe('customer ai', () => {
