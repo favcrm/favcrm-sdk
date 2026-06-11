@@ -157,6 +157,17 @@ describe('buildCreateOrderRequest', () => {
     expect(req.promotionCode).toBeUndefined();
   });
 
+  it('passes the checkout locale as customerInfo.language', () => {
+    const req = buildCreateOrderRequest(cart, { ...form, language: 'zh-HK' }, null);
+    expect(req.customerInfo.language).toBe('zh-HK');
+  });
+
+  it('omits customerInfo.language when not provided', () => {
+    const req = buildCreateOrderRequest(cart, form, null);
+    expect(req.customerInfo.language).toBeUndefined();
+    expect('language' in req.customerInfo).toBe(false);
+  });
+
   it('includes variationId when present in cart item', () => {
     const cartWithVariation: CartItem[] = [
       {

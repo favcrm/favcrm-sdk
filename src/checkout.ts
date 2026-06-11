@@ -9,6 +9,8 @@ export interface CheckoutFormFields {
   addressLine2: string;
   city: string;
   country: string;
+  /** Storefront locale at checkout (e.g. "zh-HK") — optional, used for order-notification language. */
+  language?: string;
 }
 
 export function calculateFinalTotal(
@@ -92,6 +94,7 @@ export function buildCreateOrderRequest(
       lastName: form.lastName.trim(),
       email: form.email.trim() || undefined,
       phone: form.phone.trim() || undefined,
+      ...(form.language ? { language: form.language } : {}),
     },
     shippingAddress: {
       addressLine1: form.addressLine1.trim(),

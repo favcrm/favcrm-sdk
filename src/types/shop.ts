@@ -172,6 +172,8 @@ export interface CreateOrderRequest {
     lastName: string;
     email?: string;
     phone?: string;
+    /** Storefront locale at checkout (e.g. "zh-HK") — picks the order-notification template language. */
+    language?: string;
   };
   shippingAddress: {
     addressLine1: string;
