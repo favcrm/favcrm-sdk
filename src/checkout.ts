@@ -1,4 +1,5 @@
 import type { CartItem, CreateOrderRequest, ShippingMethod } from './types/shop.js';
+import { validateEmail } from './validation.js';
 
 export interface CheckoutFormFields {
   firstName: string;
@@ -33,6 +34,9 @@ export function validateCheckoutForm(
     !fields.city.trim()
   ) {
     return 'REQUIRED_FIELDS_MISSING';
+  }
+  if (!validateEmail(fields.email)) {
+    return 'INVALID_EMAIL';
   }
   return null;
 }

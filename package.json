@@ -6,12 +6,14 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "browser": "./dist/favcrm-sdk.iife.js",
+  "sideEffects": ["./dist/favcrm-sdk.iife.js"],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./browser": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/favcrm-sdk.js",
       "script": "./dist/favcrm-sdk.iife.js"
     }

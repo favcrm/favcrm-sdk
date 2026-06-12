@@ -92,14 +92,16 @@ describe('FavCRM Client', () => {
 
     it('handles non-JSON error body', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: false, status: 500,
+        ok: false, status: 500, statusText: '',
         json: () => Promise.reject(new Error('not json')),
+        text: () => Promise.resolve(''),
       }));
       try {
         await sdk.shop.listProducts();
       } catch (e) {
         expect((e as FavCRMError).status).toBe(500);
-        expect((e as FavCRMError).message).toBe('Request failed');
+        // With no statusText and empty body, falls back to "HTTP <status>"
+        expect((e as FavCRMError).message).toBe('HTTP 500');
       }
     });
 

@@ -72,6 +72,13 @@ export interface FavCRMConfig {
   companyId: string;
   onUnauthorized?: () => void;
   fetch?: typeof globalThis.fetch;
+  /**
+   * Per-request timeout in milliseconds. Defaults to 30 000 ms.
+   * Set to 0 to disable. Applied to every `request()`, `requestRaw()`,
+   * and `fetchRaw()` call via an internally-managed AbortController that
+   * is merged with any caller-supplied signal.
+   */
+  timeoutMs?: number;
 }
 
 export interface CustomerAiChatInput {
@@ -150,13 +157,17 @@ function toQueryString(params: Record<string, string>): string {
 
 function parseSseFrame(frame: string): SseFrame | null {
   let event = "message";
-  let rawData = "";
+  const dataLines: string[] = [];
 
   for (const line of frame.split("\n")) {
     if (line.startsWith("event:")) event = line.slice(6).trim();
-    if (line.startsWith("data:")) rawData += line.slice(5).trim();
+    // Per SSE spec each "data:" line contributes one logical line; multiple
+    // data: lines in the same frame are joined with "\n".
+    if (line.startsWith("data:")) dataLines.push(line.slice(5));
   }
 
+  if (dataLines.length === 0) return null;
+  const rawData = dataLines.join("\n").trim();
   if (!rawData) return null;
 
   try {
@@ -237,12 +248,39 @@ export class FavCRM {
     };
     if (this.jwt) headers["Authorization"] = `Bearer ${this.jwt}`;
     const fetchFn = this.config.fetch ?? globalThis.fetch;
-    const response = await fetchFn(url, { method: "GET", headers });
+
+    const timeoutMs = this.config.timeoutMs ?? 30_000;
+    const controller = new AbortController();
+    const timer = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    let response: Response;
+    try {
+      response = await fetchFn(url, { method: "GET", headers, signal: controller.signal });
+    } finally {
+      if (timer !== null) clearTimeout(timer);
+    }
+
     if (response.status === 401) {
       this.config.onUnauthorized?.();
       throw new FavCRMError(401, "Unauthorized");
     }
-    if (!response.ok) throw new FavCRMError(response.status, response.statusText);
+    if (!response.ok) {
+      let message = response.statusText || `HTTP ${response.status}`;
+      try {
+        const text = await response.text();
+        if (text) {
+          try {
+            const err = JSON.parse(text);
+            if (err?.error?.message) message = err.error.message;
+            else if (typeof err?.message === "string") message = err.message;
+          } catch {
+            message = text;
+          }
+        }
+      } catch {
+        // body unreadable — keep the status-based message
+      }
+      throw new FavCRMError(response.status, message);
+    }
     return response;
   }
 
@@ -252,6 +290,33 @@ export class FavCRM {
     path: string,
     opts?: RequestOptions,
   ): Promise<T> {
+    // Retry configuration: GET requests only, up to 2 retries on transient errors
+    const isGet = method === "GET";
+    const maxRetries = isGet ? 2 : 0;
+    const retryDelays = [200, 600];
+    const retryableStatuses = new Set([429, 502, 503, 504]);
+
+    let lastError: FavCRMError | null = null;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (attempt > 0) {
+        await new Promise<void>((resolve) =>
+          setTimeout(resolve, retryDelays[attempt - 1] ?? 600),
+        );
+      }
+      const result = await this._requestOnce<T>(method, path, opts);
+      if (result.ok) return result.value;
+      lastError = result.error;
+      if (!retryableStatuses.has(result.error.status)) break;
+    }
+    throw lastError!;
+  }
+
+  /** Single-attempt helper used by request() */
+  private async _requestOnce<T>(
+    method: HttpMethod,
+    path: string,
+    opts?: RequestOptions,
+  ): Promise<{ ok: true; value: T } | { ok: false; error: FavCRMError }> {
     const qs = opts?.params ? toQueryString(opts.params) : "";
     const url = `${this.config.baseUrl}${this.base}${path}${qs}`;
 
@@ -266,15 +331,25 @@ export class FavCRM {
     }
 
     const fetchFn = this.config.fetch ?? globalThis.fetch;
-    const response = await fetchFn(url, {
-      method,
-      headers,
-      body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
-    });
+
+    const timeoutMs = this.config.timeoutMs ?? 30_000;
+    const controller = new AbortController();
+    const timer = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    let response: Response;
+    try {
+      response = await fetchFn(url, {
+        method,
+        headers,
+        body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
+        signal: controller.signal,
+      });
+    } finally {
+      if (timer !== null) clearTimeout(timer);
+    }
 
     if (response.status === 401) {
       this.config.onUnauthorized?.();
-      throw new FavCRMError(401, "Unauthorized");
+      return { ok: false, error: new FavCRMError(401, "Unauthorized") };
     }
 
     if (!response.ok) {
@@ -290,15 +365,17 @@ export class FavCRM {
             typeof err.message === "string"
               ? err.message
               : JSON.stringify(err.message);
+        } else {
+          message = response.statusText || `HTTP ${response.status}`;
         }
       } catch {
-        // non-JSON error body
+        message = response.statusText || `HTTP ${response.status}`;
       }
-      throw new FavCRMError(response.status, message, code);
+      return { ok: false, error: new FavCRMError(response.status, message, code) };
     }
 
     if (response.status === 204) {
-      return undefined as T;
+      return { ok: true, value: undefined as T };
     }
 
     const json = await response.json();
@@ -309,9 +386,9 @@ export class FavCRM {
       "success" in json &&
       json.data !== undefined
     ) {
-      return json.data as T;
+      return { ok: true, value: json.data as T };
     }
-    return json as T;
+    return { ok: true, value: json as T };
   }
 
   /** @internal — used by CustomerAiClient for SSE streams */
@@ -329,16 +406,44 @@ export class FavCRM {
     };
     if (this.jwt) headers["Authorization"] = `Bearer ${this.jwt}`;
     const fetchFn = this.config.fetch ?? globalThis.fetch;
-    const response = await fetchFn(url, {
-      method,
-      headers,
-      body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
-    });
+
+    const timeoutMs = this.config.timeoutMs ?? 30_000;
+    const controller = new AbortController();
+    const timer = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+    let response: Response;
+    try {
+      response = await fetchFn(url, {
+        method,
+        headers,
+        body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
+        signal: controller.signal,
+      });
+    } finally {
+      if (timer !== null) clearTimeout(timer);
+    }
+
     if (response.status === 401) {
       this.config.onUnauthorized?.();
       throw new FavCRMError(401, "Unauthorized");
     }
-    if (!response.ok) throw new FavCRMError(response.status, response.statusText);
+    if (!response.ok) {
+      let message = response.statusText || `HTTP ${response.status}`;
+      try {
+        const text = await response.text();
+        if (text) {
+          try {
+            const err = JSON.parse(text);
+            if (err?.error?.message) message = err.error.message;
+            else if (typeof err?.message === "string") message = err.message;
+          } catch {
+            message = text;
+          }
+        }
+      } catch {
+        // body unreadable — keep status-based message
+      }
+      throw new FavCRMError(response.status, message);
+    }
     return response;
   }
 }
@@ -622,7 +727,13 @@ class BookingsClient {
   }
 
   async list(params?: BookingListParams): Promise<Booking[]> {
-    const res = await this.sdk.request<any>("GET", "/bookings", { params: params as Record<string, string> });
+    const p: Record<string, string> = {};
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined) p[k] = String(v);
+      }
+    }
+    const res = await this.sdk.request<any>("GET", "/bookings", { params: p });
     // API returns paginated { items, pagination } — extract the array
     return Array.isArray(res) ? res : res?.items ?? [];
   }

@@ -228,8 +228,10 @@ export interface ShopOrder {
 
 export interface ShopOrderPaymentStatus {
   orderId: string;
-  orderStatus: string;
-  paymentStatus: string;
+  /** Order lifecycle status. The union lists known values; `(string & {})` preserves future additions without widening to `string`. */
+  orderStatus: 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled' | 'refunded' | (string & {});
+  /** Payment status returned by the payment gateway / FavCRM billing. */
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded' | 'voided' | (string & {});
   paidAt: string | null;
 }
 
