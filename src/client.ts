@@ -62,6 +62,7 @@ import type {
   RedemptionStatus,
 } from "./types/gift.js";
 import { AuthClient } from "./auth.js";
+import { SupportClient } from "./support.js";
 
 // ---------------------------------------------------------------------------
 // Config & Error
@@ -204,6 +205,7 @@ export class FavCRM {
   readonly gifts: GiftsClient;
   readonly surveys: SurveysClient;
   readonly ai: CustomerAiClient;
+  readonly support: SupportClient;
 
   constructor(config: FavCRMConfig) {
     this.config = config;
@@ -225,6 +227,7 @@ export class FavCRM {
     this.gifts = new GiftsClient(this);
     this.surveys = new SurveysClient(this);
     this.ai = new CustomerAiClient(this);
+    this.support = new SupportClient(this);
   }
 
   get companyId(): string {

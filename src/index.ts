@@ -321,6 +321,22 @@ export type {
   OtpIdentifier,
 } from "./types/auth.js";
 
+// Support intake
+export { SupportClient } from "./support.js";
+export type {
+  SupportQuestionType,
+  SupportIntakeQuestion,
+  SupportIntakeAnalysis,
+  SupportIntakeCategory,
+  SupportIntakeConfig,
+  SupportAnalyzeInput,
+  SupportAnalysisResult,
+  SupportContinueInput,
+  SupportContinueResult,
+  SupportSubmitInput,
+  SupportTicketResult,
+} from "./types/support.js";
+
 // API Client
 export { FavCRM, FavCRMError } from "./client.js";
 export type {
