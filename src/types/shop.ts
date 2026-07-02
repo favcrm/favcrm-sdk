@@ -42,6 +42,7 @@ export interface ProductVariation {
   selectedOptions: { optionName: string; value: string }[];
   stockQuantity: number;
   stockStatus: string;
+  trackInventory?: boolean;
   parentId: number;
 }
 
@@ -93,6 +94,7 @@ export interface Product {
   productType: string;
   stockQuantity: number;
   stockStatus: string;
+  trackInventory?: boolean;
   categories: CategoryRef[];
   brand?: ShopGroupRef | null;
   collections?: ShopGroupRef[];
@@ -121,6 +123,8 @@ export interface ProductListItem {
   status: string | null;
   productType: string;
   stockStatus: string;
+  stockQuantity?: number;
+  trackInventory?: boolean;
   categoryName: string | null;
   categorySlug: string | null;
   categories: CategoryRef[];

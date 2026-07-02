@@ -100,6 +100,30 @@ export function isInStock(stockStatus: string): boolean {
   return s === 'instock' || s === 'lowstock';
 }
 
+export interface PurchasableStock {
+  stockQuantity?: number | null;
+  stockStatus?: string | null;
+  trackInventory?: boolean | null;
+}
+
+export function getMaxPurchasableQuantity(item: PurchasableStock): number | null {
+  if (item.trackInventory === false) return null;
+  if (item.stockStatus != null && !isInStock(item.stockStatus)) return 0;
+  if (typeof item.stockQuantity !== 'number' || !Number.isFinite(item.stockQuantity)) {
+    return null;
+  }
+  return Math.max(0, Math.floor(item.stockQuantity));
+}
+
+export function clampPurchasableQuantity(
+  item: PurchasableStock,
+  quantity: number,
+): number {
+  const normalized = Math.max(0, Math.floor(quantity));
+  const max = getMaxPurchasableQuantity(item);
+  return max == null ? normalized : Math.min(normalized, max);
+}
+
 export function getProductLink(product: Pick<ProductListItem, 'slug' | 'id'>): string {
   return product.slug ? `/shop/${product.slug}` : `/shop/${product.id}`;
 }
@@ -131,6 +155,7 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
     categories: product.categories,
     isVariable: product.isVariable,
     isFeatured: product.isFeatured,
+    trackInventory: product.trackInventory,
     image: product.images.length > 0 ? product.images[0].src : null,
   };
 
@@ -140,7 +165,9 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
       price: variation.price,
       discountPrice: variation.discountPrice,
       memberPrice: variation.memberPrice,
+      stockQuantity: variation.stockQuantity,
       stockStatus: variation.stockStatus,
+      trackInventory: variation.trackInventory ?? product.trackInventory,
     };
   }
 
@@ -149,6 +176,7 @@ export function toCartProduct(product: Product, variation?: ProductVariation): P
     price: product.price,
     discountPrice: product.discountPrice,
     memberPrice: product.memberPrice,
+    stockQuantity: product.stockQuantity,
     stockStatus: product.stockStatus,
   };
 }

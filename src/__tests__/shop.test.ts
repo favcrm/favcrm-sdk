@@ -3,6 +3,8 @@ import {
   getEffectivePrice,
   hasDiscount,
   isInStock,
+  getMaxPurchasableQuantity,
+  clampPurchasableQuantity,
   getProductLink,
   getCategoryLabel,
   getPrimaryImage,
@@ -84,6 +86,57 @@ describe('isInStock', () => {
   });
 });
 
+describe('getMaxPurchasableQuantity', () => {
+  it('returns null for untracked inventory', () => {
+    expect(getMaxPurchasableQuantity({
+      trackInventory: false,
+      stockQuantity: 3,
+      stockStatus: 'in_stock',
+    })).toBeNull();
+  });
+
+  it('returns stock quantity for tracked inventory', () => {
+    expect(getMaxPurchasableQuantity({
+      trackInventory: true,
+      stockQuantity: 3,
+      stockStatus: 'in_stock',
+    })).toBe(3);
+  });
+
+  it('returns 0 for out of stock items', () => {
+    expect(getMaxPurchasableQuantity({
+      trackInventory: true,
+      stockQuantity: 3,
+      stockStatus: 'out_of_stock',
+    })).toBe(0);
+  });
+
+  it('keeps old responses without stockQuantity as unknown instead of zero', () => {
+    expect(getMaxPurchasableQuantity({
+      trackInventory: true,
+      stockStatus: 'in_stock',
+    })).toBeNull();
+  });
+});
+
+describe('clampPurchasableQuantity', () => {
+  it('caps tracked inventory to available stock', () => {
+    expect(clampPurchasableQuantity({
+      trackInventory: true,
+      stockQuantity: 3,
+      stockStatus: 'in_stock',
+    }, 5)).toBe(3);
+  });
+
+  it('does not cap untracked inventory', () => {
+    expect(clampPurchasableQuantity({
+      trackInventory: false,
+      stockQuantity: 3,
+      stockStatus: 'in_stock',
+    }, 5)).toBe(5);
+  });
+});
+
 describe('getProductLink', () => {
   it('uses slug when available', () => {
     expect(getProductLink({ slug: 'my-product', id: 42 })).toBe('/shop/my-product');
@@ -135,6 +188,7 @@ describe('toCartProduct', () => {
       memberPrice: null, regularPrice: 100, salePrice: null,
       onSale: false, seoTitle: 'SEO', seoDescription: null,
       shippingWeight: null, status: 'publish', stockQuantity: 10,
+      trackInventory: true,
       stockStatus: 'instock', categoryName: 'Cat',
       categories: [{ id: 1, name: 'Cat', slug: 'cat' }],
       isFeatured: true, isVariable: false, isVariation: false, parentProductId: null,
@@ -150,6 +204,8 @@ describe('toCartProduct', () => {
     expect(result.image).toBe('img.jpg');
     expect(result.description).toBe('Desc');
     expect(result.isFeatured).toBe(true);
+    expect(result.stockQuantity).toBe(10);
+    expect(result.trackInventory).toBe(true);
   });
 
   it('handles null description', () => {
@@ -380,6 +436,7 @@ describe('toCartProduct with variation', () => {
     expect(result.price).toBe(150);
     expect(result.memberPrice).toBe(130);
     expect(result.stockStatus).toBe('instock');
+    expect(result.stockQuantity).toBe(5);
   });
 
   it('falls back to product pricing without variation', () => {

@@ -237,6 +237,8 @@ export {
   getEffectivePrice,
   hasDiscount,
   isInStock,
+  getMaxPurchasableQuantity,
+  clampPurchasableQuantity,
   getProductLink,
   getCategoryLabel,
   getPrimaryImage,
@@ -253,7 +255,7 @@ export {
   getMonthlyEquivalent,
   getRelatedProducts,
 } from "./shop.js";
-export type { SearchMatchSegment } from "./shop.js";
+export type { PurchasableStock, SearchMatchSegment } from "./shop.js";
 
 // Checkout logic
 export {
