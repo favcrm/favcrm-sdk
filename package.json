@@ -1,6 +1,6 @@
 {
   "name": "@favcrm/sdk",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "FavCRM SDK — AI-native business OS for merchants. Manage bookings, CMS, shop, members, and loyalty.",
   "type": "module",
   "main": "./dist/index.js",
@@ -46,7 +46,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/favcrm/favcrm-sdk"
+    "url": "git+https://github.com/favcrm/favcrm-sdk.git"
   },
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {

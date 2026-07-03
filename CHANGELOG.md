@@ -2,6 +2,14 @@
 
 All notable changes to @favcrm/sdk are documented in this file.
 
+## 1.7.1 (2026-07-03)
+
+### Fixed
+
+- **Shop stock helpers in published package** — exports `getMaxPurchasableQuantity()`
+  and `clampPurchasableQuantity()`, and preserves `stockQuantity` /
+  `trackInventory` when converting products and variations with `toCartProduct()`.
+
 ## 1.4.0 (2026-05-18)
 
 ### New
