@@ -196,7 +196,7 @@ export interface BookingSettings {
   memberCancellationCutoffHours: number | null;
   /**
    * Minutes before a slot start after which customer booking is blocked.
-   * `null` = use the service duration as the cutoff. 0 disables the cutoff.
+   * `null` or `0` = no cutoff. Set > 0 to require advance notice.
    */
   minimumAdvanceBookingMinutes: number | null;
 }
