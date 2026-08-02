@@ -88,6 +88,33 @@ export type {
 } from "./types/booking.js";
 export { DEFAULT_BOOKING_SETTINGS } from "./types/booking.js";
 
+// Types — Tutor courses
+export type {
+  TutorCourseStatus,
+  TutorCourseOccurrenceStatus,
+  TutorCourseEnrollmentStatus,
+  TutorCoursePaymentStatus,
+  TutorCourseEnrollmentSegmentStatus,
+  TutorCourseLeaveRequestStatus,
+  TutorCourseTransferRequestStatus,
+  TutorCourseSummary,
+  TutorCourseOccurrence,
+  TutorCourseSection,
+  TutorCourseDetail,
+  TutorCourseEnrollment,
+  TutorCourseEnrollmentSegmentSection,
+  TutorCourseEnrollmentSegment,
+  TutorCourseMyEnrollment,
+  TutorCourseEnrollmentResult,
+  TutorCoursePaymentInput,
+  TutorCoursePaymentSession,
+  TutorCoursePaymentStatusResult,
+  TutorCourseLeaveRequest,
+  TutorCourseLeaveRequestInput,
+  TutorCourseTransferRequest,
+  TutorCourseTransferRequestInput,
+} from "./types/tutor-course.js";
+
 // Types — Invoice
 export type {
   InvoiceStatus,

@@ -55,6 +55,19 @@ import type { ProductReview, ReviewSummary, CreateReviewRequest, ReviewContext }
 import type { ServicePackageOrder } from "./types/service-package.js";
 import type { ContactEnquirySubmission, ContactEnquiryResult } from "./types/contact.js";
 import type {
+  TutorCourseSummary,
+  TutorCourseDetail,
+  TutorCourseEnrollmentResult,
+  TutorCourseMyEnrollment,
+  TutorCoursePaymentInput,
+  TutorCoursePaymentSession,
+  TutorCoursePaymentStatusResult,
+  TutorCourseLeaveRequest,
+  TutorCourseLeaveRequestInput,
+  TutorCourseTransferRequest,
+  TutorCourseTransferRequestInput,
+} from "./types/tutor-course.js";
+import type {
   ApiGiftOffer,
   ApiGiftOfferList,
   ApiRewardRedemption,
@@ -190,6 +203,7 @@ export class FavCRM {
   readonly shop: ShopClient;
   readonly bookings: BookingsClient;
   readonly events: EventsClient;
+  readonly tutorCourses: TutorCoursesClient;
   readonly members: MembersClient;
   readonly payments: PaymentsClient;
   readonly promotions: PromotionsClient;
@@ -213,6 +227,7 @@ export class FavCRM {
     this.shop = new ShopClient(this);
     this.bookings = new BookingsClient(this);
     this.events = new EventsClient(this);
+    this.tutorCourses = new TutorCoursesClient(this);
     this.members = new MembersClient(this);
     this.payments = new PaymentsClient(this);
     this.promotions = new PromotionsClient(this);
@@ -830,6 +845,127 @@ class EventsClient {
   }
   cancelRegistration(eventId: string, registrationId: string): Promise<{ cancelled: boolean }> {
     return this.sdk.request("DELETE", `/events/${eventId}/registrations/${registrationId}`);
+  }
+}
+
+class TutorCoursesClient {
+  constructor(private sdk: FavCRM) {}
+
+  async list(): Promise<TutorCourseSummary[]> {
+    const response = await this.sdk.request<{ courses: TutorCourseSummary[] }>(
+      "GET",
+      "/tutor-courses",
+    );
+    return response.courses;
+  }
+
+  get(courseId: string): Promise<TutorCourseDetail> {
+    return this.sdk.request("GET", `/tutor-courses/${courseId}`);
+  }
+
+  enroll(
+    courseId: string,
+    data: { sectionId: string },
+  ): Promise<TutorCourseEnrollmentResult> {
+    return this.sdk.request("POST", `/tutor-courses/${courseId}/enrollments`, {
+      body: data,
+    });
+  }
+
+  async listMyEnrollments(): Promise<TutorCourseMyEnrollment[]> {
+    const response = await this.sdk.request<{
+      enrollments: TutorCourseMyEnrollment[];
+    }>("GET", "/tutor-courses/my-enrollments");
+    return response.enrollments;
+  }
+
+  createPayment(
+    enrollmentId: string,
+    data: TutorCoursePaymentInput,
+  ): Promise<TutorCoursePaymentSession> {
+    return this.sdk.request(
+      "POST",
+      `/tutor-courses/my-enrollments/${enrollmentId}/payment`,
+      { body: data },
+    );
+  }
+
+  getPaymentStatus(
+    enrollmentId: string,
+    transactionId?: string,
+  ): Promise<TutorCoursePaymentStatusResult> {
+    const params = transactionId ? { transactionId } : undefined;
+    return this.sdk.request(
+      "GET",
+      `/tutor-courses/my-enrollments/${enrollmentId}/payment-status`,
+      params ? { params } : undefined,
+    );
+  }
+
+  async listLeaveRequests(
+    enrollmentId: string,
+  ): Promise<TutorCourseLeaveRequest[]> {
+    const response = await this.sdk.request<{
+      requests: TutorCourseLeaveRequest[];
+    }>(
+      "GET",
+      `/tutor-courses/my-enrollments/${enrollmentId}/leave-requests`,
+    );
+    return response.requests;
+  }
+
+  requestLeave(
+    enrollmentId: string,
+    data: TutorCourseLeaveRequestInput,
+  ): Promise<TutorCourseLeaveRequest> {
+    return this.sdk.request(
+      "POST",
+      `/tutor-courses/my-enrollments/${enrollmentId}/leave-requests`,
+      { body: data },
+    );
+  }
+
+  cancelLeave(
+    enrollmentId: string,
+    requestId: string,
+  ): Promise<TutorCourseLeaveRequest> {
+    return this.sdk.request(
+      "DELETE",
+      `/tutor-courses/my-enrollments/${enrollmentId}/leave-requests/${requestId}`,
+    );
+  }
+
+  async listTransferRequests(
+    enrollmentId: string,
+  ): Promise<TutorCourseTransferRequest[]> {
+    const response = await this.sdk.request<{
+      requests: TutorCourseTransferRequest[];
+    }>(
+      "GET",
+      `/tutor-courses/my-enrollments/${enrollmentId}/transfer-requests`,
+    );
+    return response.requests;
+  }
+
+  requestTransfer(
+    enrollmentId: string,
+    data: TutorCourseTransferRequestInput,
+  ): Promise<TutorCourseTransferRequest> {
+    return this.sdk.request(
+      "POST",
+      `/tutor-courses/my-enrollments/${enrollmentId}/transfer-requests`,
+      { body: data },
+    );
+  }
+
+  cancelTransfer(
+    enrollmentId: string,
+    requestId: string,
+  ): Promise<TutorCourseTransferRequest> {
+    return this.sdk.request(
+      "DELETE",
+      `/tutor-courses/my-enrollments/${enrollmentId}/transfer-requests/${requestId}`,
+    );
   }
 }
 

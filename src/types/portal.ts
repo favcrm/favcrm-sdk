@@ -16,7 +16,15 @@ export interface CouponClaimResult {
   message: string;
 }
 
-export type FeatureKey = "spaces" | "events" | "payments" | "memberCard" | "shop" | "pages" | "gifts";
+export type FeatureKey =
+  | "spaces"
+  | "events"
+  | "payments"
+  | "memberCard"
+  | "shop"
+  | "pages"
+  | "gifts"
+  | "tutorCourses";
 
 export interface PortalConfig {
   portalType: string;
