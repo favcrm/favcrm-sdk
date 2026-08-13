@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FavCRM, FavCRMError } from '../client.js';
+import {
+  clearEventCommandOptions,
+  createEventCommandOptions,
+  getOrCreateEventCommandOptions,
+} from '../types/event.js';
 
 function mockFetch(data: unknown, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -21,6 +26,35 @@ describe('FavCRM Client', () => {
       baseUrl: 'https://api.test.com',
       companyId: 'company-123',
     });
+  });
+
+  it('creates a cryptographically random UUID v4 event command key', () => {
+    const first = createEventCommandOptions();
+    const second = createEventCommandOptions();
+    expect(first.idempotencyKey).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+    expect(second.idempotencyKey).not.toBe(first.idempotencyKey);
+  });
+
+  it('persists one event command key across form retries', () => {
+    const values = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    };
+
+    const first = getOrCreateEventCommandOptions(storage, 'registration:form-1');
+    const retry = getOrCreateEventCommandOptions(storage, 'registration:form-1');
+    expect(retry).toEqual(first);
+
+    clearEventCommandOptions(storage, 'registration:form-1');
+    const nextOperation = getOrCreateEventCommandOptions(
+      storage,
+      'registration:form-1',
+    );
+    expect(nextOperation.idempotencyKey).not.toBe(first.idempotencyKey);
   });
 
   describe('request basics', () => {
@@ -453,9 +487,25 @@ describe('FavCRM Client', () => {
     it('register', async () => {
       const fetch = mockFetch(envelope({ id: 1 }));
       vi.stubGlobal('fetch', fetch);
-      await sdk.events.register({ eventSlug: 'ev', guestName: 'A', email: 'a@b.c', phone: '+1' });
+      await sdk.events.register(
+        { eventSlug: 'ev', guestName: 'A', email: 'a@b.c', phone: '+1' },
+        { idempotencyKey: '3d6f0a0e-469b-4f8f-8eeb-73564e215c20' },
+      );
       expect(fetch.mock.calls[0][0]).toContain('/event-registrations');
       expect(fetch.mock.calls[0][1].method).toBe('POST');
+      expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBe('3d6f0a0e-469b-4f8f-8eeb-73564e215c20');
+    });
+
+    it('preserves guest registration without an idempotency header', async () => {
+      const fetch = mockFetch(envelope({ id: 1 }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.events.register({
+        eventSlug: 'ev',
+        guestName: 'Guest',
+        email: 'guest@example.test',
+        phone: '+1',
+      });
+      expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBeUndefined();
     });
 
     it('listRegistrations', async () => {
@@ -472,6 +522,22 @@ describe('FavCRM Client', () => {
       await sdk.events.createPaymentIntent('reg-1');
       expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/payment-intent');
       expect(fetch.mock.calls[0][1].method).toBe('POST');
+    });
+
+    it('creates an idempotent hosted payment session and reads payment status', async () => {
+      const fetch = mockFetch(envelope({ transactionId: 'txn-1', paymentUrl: 'https://pay.example.test' }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.events.createPaymentSession(
+        'reg-1',
+        { successUrl: 'https://portal.example.test/success', cancelUrl: 'https://portal.example.test/cancel' },
+        { idempotencyKey: '6887a364-8c9f-48c3-b258-fc9bf4fd7a87' },
+      );
+      expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/payment');
+      expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBe('6887a364-8c9f-48c3-b258-fc9bf4fd7a87');
+
+      await sdk.events.getPaymentStatus('reg-1', 'txn-1');
+      expect(fetch.mock.calls[1][0]).toContain('/event-registrations/reg-1/payment-status?transactionId=txn-1');
+      expect(fetch.mock.calls[1][1].method).toBe('GET');
     });
 
     it('getAccess', async () => {

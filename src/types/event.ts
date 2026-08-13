@@ -109,6 +109,57 @@ export interface EventRegistrationSubmission {
   creditsUsed?: string;
 }
 
+export interface EventCommandOptions {
+  /** Stable key reused only when retrying the same logical command. */
+  idempotencyKey: string;
+}
+
+export interface EventCommandStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+const EVENT_COMMAND_STORAGE_PREFIX = 'favcrm:event-command:';
+const UUID_V4_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * Create a cryptographically random command key. Persist the returned object
+ * with one form operation and reuse it for every retry of that operation.
+ */
+export function createEventCommandOptions(): EventCommandOptions {
+  return { idempotencyKey: crypto.randomUUID() };
+}
+
+/** Load one pending form operation or create and persist it. */
+export function getOrCreateEventCommandOptions(
+  storage: EventCommandStorage,
+  operation: string,
+): EventCommandOptions {
+  const normalizedOperation = operation.trim();
+  if (!normalizedOperation) throw new Error('Event command operation is required');
+  const storageKey = `${EVENT_COMMAND_STORAGE_PREFIX}${normalizedOperation}`;
+  const existing = storage.getItem(storageKey);
+  if (existing && UUID_V4_PATTERN.test(existing)) {
+    return { idempotencyKey: existing };
+  }
+
+  const created = createEventCommandOptions();
+  storage.setItem(storageKey, created.idempotencyKey);
+  return created;
+}
+
+/** Clear the persisted key only after the operation reaches a terminal state. */
+export function clearEventCommandOptions(
+  storage: EventCommandStorage,
+  operation: string,
+): void {
+  const normalizedOperation = operation.trim();
+  if (!normalizedOperation) return;
+  storage.removeItem(`${EVENT_COMMAND_STORAGE_PREFIX}${normalizedOperation}`);
+}
+
 export interface EventRegistrationResult {
   id: string;
   eventSlug: string;
@@ -159,4 +210,13 @@ export interface EventPaymentSession {
   paymentMethodName?: string;
   guestRegistrationToken?: string;
   expiresAt?: string;
+}
+
+export interface EventPaymentStatus {
+  registrationId: string;
+  registrationStatus: string;
+  paymentStatus: string;
+  paidAt: string | null;
+  transactionId: string | null;
+  changed: boolean;
 }

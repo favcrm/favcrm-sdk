@@ -61,11 +61,19 @@ export type {
   EventRegistrationStatus,
   EventRegistration,
   EventRegistrationSubmission,
+  EventCommandOptions,
+  EventCommandStorage,
   EventRegistrationResult,
   EventRegistrationAccess,
   EventPaymentMethod,
   EventPaymentSessionRequest,
   EventPaymentSession,
+  EventPaymentStatus,
+} from "./types/event.js";
+export {
+  clearEventCommandOptions,
+  createEventCommandOptions,
+  getOrCreateEventCommandOptions,
 } from "./types/event.js";
 
 // Types — Booking
