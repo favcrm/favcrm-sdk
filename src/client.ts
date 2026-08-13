@@ -21,6 +21,8 @@ import type {
   EventPaymentMethod,
   EventPaymentSessionRequest,
   EventPaymentSession,
+  EventCommandOptions,
+  EventPaymentStatus,
 } from "./types/event.js";
 import type {
   BookingService,
@@ -157,6 +159,7 @@ type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 interface RequestOptions {
   body?: unknown;
   params?: Record<string, string>;
+  idempotencyKey?: string;
 }
 
 interface SseFrame {
@@ -346,6 +349,9 @@ export class FavCRM {
 
     if (this.jwt) {
       headers["Authorization"] = `Bearer ${this.jwt}`;
+    }
+    if (opts?.idempotencyKey) {
+      headers["Idempotency-Key"] = opts.idempotencyKey;
     }
 
     const fetchFn = this.config.fetch ?? globalThis.fetch;
@@ -791,8 +797,12 @@ class EventsClient {
 
   register(
     data: EventRegistrationSubmission,
+    options?: EventCommandOptions,
   ): Promise<EventRegistrationResult> {
-    return this.sdk.request("POST", "/event-registrations", { body: data });
+    return this.sdk.request("POST", "/event-registrations", {
+      body: data,
+      idempotencyKey: options?.idempotencyKey,
+    });
   }
 
   listRegistrations(): Promise<EventRegistration[]> {
@@ -813,11 +823,23 @@ class EventsClient {
   createPaymentSession(
     registrationId: string,
     data: EventPaymentSessionRequest,
+    options?: EventCommandOptions,
   ): Promise<EventPaymentSession> {
     return this.sdk.request(
       "POST",
       `/event-registrations/${registrationId}/payment`,
-      { body: data },
+      { body: data, idempotencyKey: options?.idempotencyKey },
+    );
+  }
+
+  getPaymentStatus(
+    registrationId: string,
+    transactionId?: string,
+  ): Promise<EventPaymentStatus> {
+    return this.sdk.request(
+      "GET",
+      `/event-registrations/${registrationId}/payment-status`,
+      { params: transactionId ? { transactionId } : undefined },
     );
   }
 

@@ -109,6 +109,11 @@ export interface EventRegistrationSubmission {
   creditsUsed?: string;
 }
 
+export interface EventCommandOptions {
+  /** Stable key reused only when retrying the same logical command. */
+  idempotencyKey: string;
+}
+
 export interface EventRegistrationResult {
   id: string;
   eventSlug: string;
@@ -159,4 +164,13 @@ export interface EventPaymentSession {
   paymentMethodName?: string;
   guestRegistrationToken?: string;
   expiresAt?: string;
+}
+
+export interface EventPaymentStatus {
+  registrationId: string;
+  registrationStatus: string;
+  paymentStatus: string;
+  paidAt: string | null;
+  transactionId: string | null;
+  changed: boolean;
 }

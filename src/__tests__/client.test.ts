@@ -453,9 +453,13 @@ describe('FavCRM Client', () => {
     it('register', async () => {
       const fetch = mockFetch(envelope({ id: 1 }));
       vi.stubGlobal('fetch', fetch);
-      await sdk.events.register({ eventSlug: 'ev', guestName: 'A', email: 'a@b.c', phone: '+1' });
+      await sdk.events.register(
+        { eventSlug: 'ev', guestName: 'A', email: 'a@b.c', phone: '+1' },
+        { idempotencyKey: 'registration-command-1' },
+      );
       expect(fetch.mock.calls[0][0]).toContain('/event-registrations');
       expect(fetch.mock.calls[0][1].method).toBe('POST');
+      expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBe('registration-command-1');
     });
 
     it('listRegistrations', async () => {
@@ -472,6 +476,22 @@ describe('FavCRM Client', () => {
       await sdk.events.createPaymentIntent('reg-1');
       expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/payment-intent');
       expect(fetch.mock.calls[0][1].method).toBe('POST');
+    });
+
+    it('creates an idempotent hosted payment session and reads payment status', async () => {
+      const fetch = mockFetch(envelope({ transactionId: 'txn-1', paymentUrl: 'https://pay.example.test' }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.events.createPaymentSession(
+        'reg-1',
+        { successUrl: 'https://portal.example.test/success', cancelUrl: 'https://portal.example.test/cancel' },
+        { idempotencyKey: 'payment-command-1' },
+      );
+      expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/payment');
+      expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBe('payment-command-1');
+
+      await sdk.events.getPaymentStatus('reg-1', 'txn-1');
+      expect(fetch.mock.calls[1][0]).toContain('/event-registrations/reg-1/payment-status?transactionId=txn-1');
+      expect(fetch.mock.calls[1][1].method).toBe('GET');
     });
 
     it('getAccess', async () => {
