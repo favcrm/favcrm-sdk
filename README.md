@@ -263,9 +263,11 @@ if (validation.valid) {
 ### Event command retries
 
 Authenticated event registration and hosted-payment mutations require a
-cryptographically random command key. Create the options once when the form
-operation begins, persist that object with the pending form state, and reuse it
-for every retry of that operation:
+cryptographically random command key at the API boundary. Create the options
+once when the form operation begins, persist that object with the pending form
+state, and reuse it for every retry of that operation. Guest flows may omit the
+options because their short-lived access-token response is intentionally not
+stored as a durable receipt:
 
 ```typescript
 import {

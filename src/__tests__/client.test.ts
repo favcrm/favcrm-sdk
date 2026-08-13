@@ -496,6 +496,18 @@ describe('FavCRM Client', () => {
       expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBe('3d6f0a0e-469b-4f8f-8eeb-73564e215c20');
     });
 
+    it('preserves guest registration without an idempotency header', async () => {
+      const fetch = mockFetch(envelope({ id: 1 }));
+      vi.stubGlobal('fetch', fetch);
+      await sdk.events.register({
+        eventSlug: 'ev',
+        guestName: 'Guest',
+        email: 'guest@example.test',
+        phone: '+1',
+      });
+      expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBeUndefined();
+    });
+
     it('listRegistrations', async () => {
       const fetch = mockFetch(envelope([]));
       vi.stubGlobal('fetch', fetch);
