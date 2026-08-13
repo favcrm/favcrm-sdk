@@ -289,6 +289,45 @@ Create a new command only when the user starts a genuinely new operation.
 
 ---
 
+## Fire Club Agent portal
+
+Agent sessions use a dedicated client and token audience. Keep this client
+separate from the Customer `FavCRM` instance:
+
+```typescript
+import {
+  FireClubAgentClient,
+  clearFireClubAgentCommandOptions,
+  getOrCreateFireClubAgentCommandOptions,
+} from '@favcrm/sdk';
+
+const agent = new FireClubAgentClient({
+  baseUrl: 'https://api.favcrm.io',
+  companyId: 'wolo-company-id',
+});
+
+const login = await agent.auth.login('agent@example.com', password);
+if (!('requiresTwoFactor' in login)) {
+  agent.setToken(login.token);
+}
+
+const venues = await agent.venues.list();
+const assignedCustomers = await agent.customers.list({ search: 'Ada' });
+
+const operation = `agent-link:${event.slug}`;
+const command = getOrCreateFireClubAgentCommandOptions(
+  sessionStorage,
+  operation,
+);
+const link = await agent.links.issue({ eventSlug: event.slug }, command);
+clearFireClubAgentCommandOptions(sessionStorage, operation);
+```
+
+Agent Link issue and revoke commands require one persisted idempotency key per
+logical operation. Reuse that key for retries and clear it only after success.
+
+---
+
 ## CMS Pages
 
 Use `sdk.cms.listPages()` for navigation and listing screens. It returns `CmsPageSummary[]`, which does not include page `blocks`.

@@ -70,6 +70,47 @@ export type {
   EventPaymentSession,
   EventPaymentStatus,
 } from "./types/event.js";
+
+// Types — Fire Club Agent portal
+export type {
+  FireClubAgentClientConfig,
+  FireClubAgentUser,
+  FireClubAgentCompany,
+  FireClubAgentSession,
+  FireClubAgentMfaMethod,
+  FireClubAgentMfaChallenge,
+  FireClubAgentLoginResult,
+  FireClubAgentIdentity,
+  FireClubAgentTotpSetup,
+  FireClubAgentPasskeyOptions,
+  FireClubAgentPasskeyAssertion,
+  FireClubAgentPagination,
+  FireClubAgentPage,
+  FireClubAgentListParams,
+  FireClubAgentVenueTag,
+  FireClubAgentVenue,
+  FireClubAgentVenueDetail,
+  FireClubAssignedCustomer,
+  FireClubAssignedCustomerMembership,
+  FireClubAssignedCustomerRegistration,
+  FireClubAssignedCustomerDetail,
+  FireClubAgentLinkStatus,
+  FireClubAgentLink,
+  FireClubAgentLinkInput,
+  FireClubAgentCommandOptions,
+  FireClubAgentCommandStorage,
+} from "./types/fireclub-agent.js";
+
+export {
+  FireClubAgentClient,
+  FireClubAgentAuthClient,
+  FireClubAgentVenuesClient,
+  FireClubAgentCustomersClient,
+  FireClubAgentLinksClient,
+  createFireClubAgentCommandOptions,
+  getOrCreateFireClubAgentCommandOptions,
+  clearFireClubAgentCommandOptions,
+} from "./fireclub-agent.js";
 export {
   clearEventCommandOptions,
   createEventCommandOptions,
