@@ -797,11 +797,11 @@ class EventsClient {
 
   register(
     data: EventRegistrationSubmission,
-    options?: EventCommandOptions,
+    options: EventCommandOptions,
   ): Promise<EventRegistrationResult> {
     return this.sdk.request("POST", "/event-registrations", {
       body: data,
-      idempotencyKey: options?.idempotencyKey,
+      idempotencyKey: options.idempotencyKey,
     });
   }
 
@@ -823,12 +823,12 @@ class EventsClient {
   createPaymentSession(
     registrationId: string,
     data: EventPaymentSessionRequest,
-    options?: EventCommandOptions,
+    options: EventCommandOptions,
   ): Promise<EventPaymentSession> {
     return this.sdk.request(
       "POST",
       `/event-registrations/${registrationId}/payment`,
-      { body: data, idempotencyKey: options?.idempotencyKey },
+      { body: data, idempotencyKey: options.idempotencyKey },
     );
   }
 

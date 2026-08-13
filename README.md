@@ -260,6 +260,31 @@ if (validation.valid) {
 | `walletPasses` | Apple/Google wallet passes | `getStatus`, `generate`, `downloadAppleBlob` |
 | `gifts` | Gift offers and redemption | `listMyRedemptions`, `getOffer`, `redeemOffer`, `claimByCode` |
 
+### Event command retries
+
+Authenticated event registration and hosted-payment mutations require a
+cryptographically random command key. Create the options once when the form
+operation begins, persist that object with the pending form state, and reuse it
+for every retry of that operation:
+
+```typescript
+import {
+  clearEventCommandOptions,
+  getOrCreateEventCommandOptions,
+} from '@favcrm/sdk';
+
+const operation = `registration:${event.id}`;
+const command = getOrCreateEventCommandOptions(
+  sessionStorage,
+  operation,
+);
+
+await sdk.events.register(registration, command);
+clearEventCommandOptions(sessionStorage, operation);
+```
+
+Create a new command only when the user starts a genuinely new operation.
+
 ---
 
 ## CMS Pages
