@@ -57,6 +57,7 @@ export type {
   EventDate,
   EventStatus,
   EventDeliveryMode,
+  EventPublicPresentation,
   Event,
   EventRegistrationStatus,
   EventRegistration,

@@ -1,3 +1,21 @@
+export interface EventPublicPresentation {
+  overview: string[];
+  highlights: Array<{ title: string; description: string }>;
+  agenda: Array<{ time: string; title: string; description: string }>;
+  audience: string[];
+  facilitator: { name: string; role: string; bio: string };
+  practical: {
+    transit: string;
+    accessibility: string;
+    language: string;
+    capacity: string;
+    preparation: string;
+  };
+  includes: string[];
+  policy: string;
+  faq: Array<{ question: string; answer: string }>;
+}
+
 /** Raw event shape from the v6 customer-portal API. */
 export interface ApiEvent {
   id: string;
@@ -5,6 +23,8 @@ export interface ApiEvent {
   title: string;
   introduction?: string | null;
   content?: string | null;
+  /** Optional during rolling deployments; current APIs always return a normalized value. */
+  publicPresentation?: EventPublicPresentation;
   price: number;
   currency: string;
   status: string;
