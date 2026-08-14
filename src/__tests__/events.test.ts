@@ -41,9 +41,31 @@ describe("mapApiEvent", () => {
     expect(result.slug).toBe("test-event");
     expect(result.title).toBe("Test Event");
     expect(result.price).toBe(100);
+    expect(result.regularPrice).toBe(100);
+    expect(result.pricingSource).toBe("regular");
     expect(result.currency).toBe("HKD");
     expect(result.isFree).toBe(false);
     expect(result.location).toBe("Room A");
+  });
+
+  it("maps automatic event pricing", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        price: 580,
+        regularPrice: 880,
+        discountedPrice: 680,
+        earlyBirdPrice: 580,
+        earlyBirdEndsAt: "2099-01-01T00:00:00.000Z",
+        pricingSource: "early_bird",
+      }),
+    );
+    expect(result).toMatchObject({
+      price: 580,
+      regularPrice: 880,
+      discountedPrice: 680,
+      earlyBirdPrice: 580,
+      pricingSource: "early_bird",
+    });
   });
 
   it("marks free events", () => {
