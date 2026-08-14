@@ -26,6 +26,11 @@ export interface ApiEvent {
   /** Optional during rolling deployments; current APIs always return a normalized value. */
   publicPresentation?: EventPublicPresentation;
   price: number;
+  regularPrice?: number;
+  discountedPrice?: number | null;
+  earlyBirdPrice?: number | null;
+  earlyBirdEndsAt?: string | null;
+  pricingSource?: EventPricingSource;
   currency: string;
   status: string;
   venue: string | null;
@@ -71,6 +76,7 @@ export type EventStatus =
   | "published";
 
 export type EventDeliveryMode = "in_person" | "online" | "hybrid";
+export type EventPricingSource = "regular" | "discounted" | "early_bird";
 
 /** Normalized event used throughout the app. */
 export interface Event {
@@ -84,6 +90,11 @@ export interface Event {
   dates: EventDate[];
   location: string | null;
   price: number;
+  regularPrice: number;
+  discountedPrice: number | null;
+  earlyBirdPrice: number | null;
+  earlyBirdEndsAt: string | null;
+  pricingSource: EventPricingSource;
   currency: string;
   isFree: boolean;
   remainingQuota: number | null;
