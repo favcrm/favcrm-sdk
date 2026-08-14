@@ -478,9 +478,18 @@ describe('FavCRM Client', () => {
     });
 
     it('get', async () => {
-      const fetch = mockFetch(envelope({ id: 'e-1' }));
+      const event = {
+        id: 'e-1',
+        publicPresentation: {
+          overview: ['Overview'], highlights: [], agenda: [], audience: [],
+          facilitator: { name: '', role: '', bio: '' },
+          practical: { transit: '', accessibility: '', language: '', capacity: '', preparation: '' },
+          includes: [], policy: '', faq: [],
+        },
+      };
+      const fetch = mockFetch(envelope(event));
       vi.stubGlobal('fetch', fetch);
-      await sdk.events.get('my-event');
+      await expect(sdk.events.get('my-event')).resolves.toEqual(event);
       expect(fetch.mock.calls[0][0]).toContain('/events/my-event');
     });
 
