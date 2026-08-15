@@ -1,12 +1,14 @@
 {
   "name": "@favcrm/sdk",
-  "version": "1.10.0",
-  "description": "FavCRM SDK — AI-native business OS for merchants. Manage bookings, CMS, shop, members, and loyalty.",
+  "version": "1.11.0",
+  "description": "FavCRM SDK \u2014 AI-native business OS for merchants. Manage bookings, CMS, shop, members, and loyalty.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "browser": "./dist/favcrm-sdk.iife.js",
-  "sideEffects": ["./dist/favcrm-sdk.iife.js"],
+  "sideEffects": [
+    "./dist/favcrm-sdk.iife.js"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
