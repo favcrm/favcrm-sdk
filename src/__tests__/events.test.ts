@@ -7,6 +7,7 @@ import {
   getMaxOrderQuantity,
   sortEventsForDisplay,
   formatEventPrice,
+  eventHasPromoPrice,
   formatEventDate,
   getDeliveryModeLabel,
   getEventAvailabilityLabel,
@@ -289,6 +290,54 @@ describe("mapApiEvent", () => {
     const result = mapApiEvent(makeApiEvent({ image: null, venue: null }));
     expect(result.imageUrl).toBeNull();
     expect(result.location).toBeNull();
+    expect(result.venue).toBeNull();
+    expect(result.venueAddress).toBeNull();
+  });
+
+  it("maps venue name and address separately", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        venue: "The Victuals",
+        venueAddress: "灣仔軒尼詩道99號彰顯大廈3樓",
+      }),
+    );
+    expect(result.venue).toBe("The Victuals");
+    expect(result.venueAddress).toBe("灣仔軒尼詩道99號彰顯大廈3樓");
+    expect(result.location).toBe("The Victuals");
+  });
+
+  it("falls back location to address when venue name is blank", () => {
+    const result = mapApiEvent(
+      makeApiEvent({ venue: "  ", venueAddress: "123 Main St" }),
+    );
+    expect(result.venue).toBeNull();
+    expect(result.venueAddress).toBe("123 Main St");
+    expect(result.location).toBe("123 Main St");
+  });
+
+  it("maps early-bird / discount pricing fields", () => {
+    const result = mapApiEvent(
+      makeApiEvent({
+        price: 320,
+        regularPrice: 350,
+        discountedPrice: null,
+        earlyBirdPrice: 320,
+        earlyBirdEndsAt: "2026-08-31T15:55:00.000Z",
+        pricingSource: "early_bird",
+      }),
+    );
+    expect(result.price).toBe(320);
+    expect(result.regularPrice).toBe(350);
+    expect(result.earlyBirdPrice).toBe(320);
+    expect(result.earlyBirdEndsAt).toBe("2026-08-31T15:55:00.000Z");
+    expect(result.pricingSource).toBe("early_bird");
+    expect(result.isFree).toBe(false);
+  });
+
+  it("defaults regularPrice to price when API omits it", () => {
+    const result = mapApiEvent(makeApiEvent({ price: 100 }));
+    expect(result.regularPrice).toBe(100);
+    expect(result.pricingSource).toBe("regular");
   });
 
   it("maps image URL", () => {
@@ -535,6 +584,29 @@ describe("formatEventPrice", () => {
     const event = makeEvent();
     event.isFree = true;
     expect(formatEventPrice(event, { freeLabel: "免費" })).toBe("免費");
+  });
+});
+
+describe("eventHasPromoPrice", () => {
+  it("is true when payable price is below regular", () => {
+    const event = makeEvent();
+    event.price = 320;
+    event.regularPrice = 350;
+    event.isFree = false;
+    expect(eventHasPromoPrice(event)).toBe(true);
+  });
+
+  it("is false for free or full-price events", () => {
+    const free = makeEvent();
+    free.isFree = true;
+    free.price = 0;
+    free.regularPrice = 0;
+    expect(eventHasPromoPrice(free)).toBe(false);
+
+    const full = makeEvent();
+    full.price = 100;
+    full.regularPrice = 100;
+    expect(eventHasPromoPrice(full)).toBe(false);
   });
 });
 

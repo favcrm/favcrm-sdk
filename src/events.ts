@@ -3,6 +3,7 @@ import type {
   Event,
   EventDate,
   EventDeliveryMode,
+  EventPricingSource,
 } from "./types/event.js";
 
 function getCloseDate(
@@ -70,6 +71,26 @@ function getDisplayDate(dates: EventDate[]): EventDate | null {
   return getAvailableEventDates({ dates } as Event)[0] ?? dates[0] ?? null;
 }
 
+function normalizeOptionalPrice(value: number | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  return Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+function normalizePricingSource(
+  value: EventPricingSource | undefined,
+): EventPricingSource {
+  if (value === "discounted" || value === "early_bird" || value === "regular") {
+    return value;
+  }
+  return "regular";
+}
+
+function blankToNull(value: string | null | undefined): string | null {
+  if (value == null) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 /** Map raw v6 API event to the normalized Event shape. */
 export function mapApiEvent(raw: ApiEvent): Event {
   const dates = (raw.dates || []).map((d) => {
@@ -96,6 +117,13 @@ export function mapApiEvent(raw: ApiEvent): Event {
     };
   });
   const displayDate = getDisplayDate(dates);
+  const venue = blankToNull(raw.venue);
+  const venueAddress = blankToNull(raw.venueAddress);
+  const price = Number.isFinite(raw.price) ? raw.price : 0;
+  const regularPrice =
+    normalizeOptionalPrice(raw.regularPrice) ??
+    normalizeOptionalPrice(raw.price) ??
+    0;
 
   return {
     id: raw.id,
@@ -106,15 +134,17 @@ export function mapApiEvent(raw: ApiEvent): Event {
     startDate: displayDate?.startTime ?? null,
     endDate: displayDate?.endTime ?? null,
     dates,
-    location: raw.venue || null,
-    price: raw.price,
-    regularPrice: raw.regularPrice ?? raw.price,
-    discountedPrice: raw.discountedPrice ?? null,
-    earlyBirdPrice: raw.earlyBirdPrice ?? null,
-    earlyBirdEndsAt: raw.earlyBirdEndsAt ?? null,
-    pricingSource: raw.pricingSource ?? "regular",
+    location: venue || venueAddress,
+    venue,
+    venueAddress,
+    price,
+    regularPrice,
+    discountedPrice: normalizeOptionalPrice(raw.discountedPrice ?? null),
+    earlyBirdPrice: normalizeOptionalPrice(raw.earlyBirdPrice ?? null),
+    earlyBirdEndsAt: blankToNull(raw.earlyBirdEndsAt),
+    pricingSource: normalizePricingSource(raw.pricingSource),
     currency: raw.currency,
-    isFree: raw.price === 0,
+    isFree: price === 0,
     remainingQuota: null,
     status: deriveEventStatus(raw),
     maxTicketsPerOrder: raw.maxTicketsPerOrder ?? 10,
@@ -208,6 +238,13 @@ export function formatEventPrice(
   const { locale = "en", freeLabel = "Free" } = opts;
   if (event.isFree || event.price <= 0) return freeLabel;
   return getCurrencyFormatter(event.currency, locale).format(event.price);
+}
+
+/** True when the payable price is below the regular list price. */
+export function eventHasPromoPrice(
+  event: Pick<Event, "isFree" | "price" | "regularPrice">,
+): boolean {
+  return !event.isFree && event.regularPrice > event.price;
 }
 
 export interface FormatEventDateOptions {

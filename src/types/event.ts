@@ -25,7 +25,9 @@ export interface ApiEvent {
   content?: string | null;
   /** Optional during rolling deployments; current APIs always return a normalized value. */
   publicPresentation?: EventPublicPresentation;
+  /** Effective ticket price after early-bird / discount resolution. */
   price: number;
+  /** List / regular ticket price before promotions. */
   regularPrice?: number;
   discountedPrice?: number | null;
   earlyBirdPrice?: number | null;
@@ -33,7 +35,9 @@ export interface ApiEvent {
   pricingSource?: EventPricingSource;
   currency: string;
   status: string;
+  /** Venue display name (merchant "location" field). */
   venue: string | null;
+  /** Full street address when set separately from the venue name. */
   venueAddress?: string | null;
   image?: string | null;
   quota?: string | null;
@@ -78,6 +82,8 @@ export type EventStatus =
 export type EventDeliveryMode = "in_person" | "online" | "hybrid";
 export type EventPricingSource = "regular" | "discounted" | "early_bird";
 
+export type EventPricingSource = "regular" | "discounted" | "early_bird";
+
 /** Normalized event used throughout the app. */
 export interface Event {
   id: string;
@@ -88,8 +94,18 @@ export interface Event {
   startDate: string | null;
   endDate: string | null;
   dates: EventDate[];
+  /**
+   * Best single-line place label for chips/cards: venue name, else address.
+   * Prefer `venue` + `venueAddress` when rendering a full venue block.
+   */
   location: string | null;
+  /** Venue display name. */
+  venue: string | null;
+  /** Full street address (may be empty when only the name was set). */
+  venueAddress: string | null;
+  /** Effective payable unit price. */
   price: number;
+  /** Regular / list price before early-bird or discount. */
   regularPrice: number;
   discountedPrice: number | null;
   earlyBirdPrice: number | null;
