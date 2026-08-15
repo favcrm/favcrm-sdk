@@ -82,8 +82,6 @@ export type EventStatus =
 export type EventDeliveryMode = "in_person" | "online" | "hybrid";
 export type EventPricingSource = "regular" | "discounted" | "early_bird";
 
-export type EventPricingSource = "regular" | "discounted" | "early_bird";
-
 /** Normalized event used throughout the app. */
 export interface Event {
   id: string;

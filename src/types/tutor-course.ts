@@ -114,6 +114,7 @@ export interface TutorCourseEnrollmentSegment {
 export interface TutorCourseMyEnrollment {
   enrollment: TutorCourseEnrollment;
   course: TutorCourseSummary;
+  isLearner: boolean;
   segments: TutorCourseEnrollmentSegment[];
 }
 
@@ -121,7 +122,30 @@ export interface TutorCourseEnrollmentResult {
   enrollment: TutorCourseEnrollment;
   eligibleOccurrenceIds: string[];
   paymentPending: boolean;
+  paymentHoldExpiresAt: string | null;
 }
+
+export interface TutorCourseEnrollmentPreview {
+  enrollable: boolean;
+  reason: string | null;
+  eligibleOccurrenceIds: string[];
+  eligibleOccurrenceCount: number;
+  initialChargeAmount: string | null;
+  currency: string | null;
+  seatsRemaining: number | null;
+  paymentHoldExpiresAt: string | null;
+}
+
+export type TutorCourseCheckoutStatus =
+  | "pending"
+  | "processing"
+  | "redirected"
+  | "expired"
+  | "completed"
+  | "failed"
+  | "cancelled"
+  | "refunded"
+  | "partial_refund";
 
 export interface TutorCoursePaymentInput {
   successUrl: string;
@@ -139,8 +163,8 @@ export interface TutorCoursePaymentSession {
 }
 
 export interface TutorCoursePaymentStatusResult {
-  enrollmentStatus: string;
-  paymentStatus: string;
+  enrollmentStatus: TutorCourseEnrollmentStatus;
+  paymentStatus: TutorCourseCheckoutStatus | TutorCoursePaymentStatus;
   paidAt: string | null;
   transactionId: string | null;
   changed: boolean;
