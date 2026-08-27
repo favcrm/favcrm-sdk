@@ -96,7 +96,12 @@ export interface CardSettings {
   foregroundColor: string;
   cardBackgroundUrl: string | null;
   showQrCode: boolean;
-  qrCodePayloadType?: "member_code" | "member_id" | "custom";
+  qrCodePayloadType?:
+    | "DEFAULT"
+    | "EATS365"
+    | "member_code"
+    | "member_id"
+    | "custom";
   extraQrPayload?: Record<string, unknown> | null;
   displayPointType: string;
   cardLayoutConfig: CardLayoutConfig | null;
