@@ -1,0 +1,5 @@
+# pnpm 11 made strictDepBuilds the default, so an unapproved install script
+# fails the install instead of warning as pnpm 10 did. esbuild ships prebuilt
+# platform packages and never ran its script here, so it stays off.
+allowBuilds:
+  esbuild: false
