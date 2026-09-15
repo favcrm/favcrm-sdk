@@ -93,6 +93,50 @@ export interface SurveyPublicView {
   invitation?: SurveyInvitation;
 }
 
+/**
+ * Survey response attribution contract v1
+ * (`metadata.attribution`, see api `docs/survey-response-attribution-v1.md`).
+ * The provider validates, bounds, and re-sanitizes every field server-side;
+ * unknown keys are stripped and `survey` context is stamped by the server.
+ */
+export type SurveyAttributionClickIdKey = "google" | "meta" | "tiktok";
+
+export interface SurveyAttributionTouch {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmId?: string;
+  utmContent?: string;
+  utmTerm?: string;
+  utmSourcePlatform?: string;
+  clickIds?: Partial<Record<SurveyAttributionClickIdKey, string>>;
+  landingUrl?: string;
+  referrer?: string;
+  /** ISO-8601 timestamp; required on every touch. */
+  capturedAt: string;
+  capturedVia: "hosted_form";
+}
+
+export interface SurveyResponseAttribution {
+  schemaVersion: 1;
+  firstTouch?: SurveyAttributionTouch | null;
+  submissionTouch?: SurveyAttributionTouch | null;
+  sessionId?: string;
+  placement?: { pagePath?: string; form?: string };
+  /** Stamped by the provider; any client-supplied value is discarded. */
+  survey?: { id: string; slug: string; definitionUpdatedAt: string | null };
+}
+
+/**
+ * Free-form response metadata with the reserved `attribution` namespace typed.
+ * Other keys pass through to the provider untouched. `SurveyResponseSubmission`
+ * keeps `metadata` loosely typed for backwards compatibility — consumers that
+ * want the contract enforced can build against this shape directly.
+ */
+export type SurveyResponseMetadata = Record<string, unknown> & {
+  attribution?: SurveyResponseAttribution;
+};
+
 export interface SurveyResponseSubmission {
   answers: Record<string, unknown>;
   scores?: Record<string, number>;
@@ -103,9 +147,28 @@ export interface SurveyResponseSubmission {
   sessionId?: string;
   startedAt?: string;
   timeSpentSeconds?: number;
+  /**
+   * Client-generated idempotency key (8–128 chars, `[A-Za-z0-9_-]`).
+   * Identical retries under one key return the recorded result once; a
+   * changed payload under the same key is a 409 conflict.
+   */
+  submissionKey?: string;
+  /** Resume a stored partial by row id — requires `resumeToken`. */
+  responseId?: string;
+  /**
+   * Bearer proof returned once by the first accepted keyed submission.
+   * Required for `responseId`-based resume and for a same-key mutation that
+   * changes the payload.
+   */
+  resumeToken?: string;
 }
 
 export interface SurveyResponseResult {
-  responseId: string;
-  duplicate?: boolean;
+  /** The response row id (wire field `id`). */
+  id: string;
+  duplicate: boolean;
+  /** Present on providers that support the lifecycle contract. */
+  status?: SurveyResponseStatus;
+  /** Present once, on the first accepted keyed submission. */
+  resumeToken?: string;
 }
