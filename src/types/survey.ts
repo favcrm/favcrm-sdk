@@ -156,11 +156,18 @@ export interface SurveyResponseSubmission {
   /** Resume a stored partial by row id — requires `resumeToken`. */
   responseId?: string;
   /**
-   * Bearer proof returned once by the first accepted keyed submission.
+   * Bearer proof authorizing resume. Either minted ahead of time via
+   * `surveys.mintResumeCapability*` (recommended — survives a lost submit
+   * reply) or returned once by the first accepted keyed submission.
    * Required for `responseId`-based resume and for a same-key mutation that
    * changes the payload.
    */
   resumeToken?: string;
+}
+
+/** Server-minted resume capability (64-hex bearer token). */
+export interface SurveyResumeCapability {
+  resumeToken: string;
 }
 
 export interface SurveyResponseResult {

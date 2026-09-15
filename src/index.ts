@@ -199,6 +199,7 @@ export type {
   SurveyResponseStatus,
   SurveyResponseSubmission,
   SurveyResponseResult,
+  SurveyResumeCapability,
   SurveyResponseMetadata,
   SurveyResponseAttribution,
   SurveyAttributionTouch,

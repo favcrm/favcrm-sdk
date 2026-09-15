@@ -128,6 +128,24 @@ describe("survey response contract", () => {
     expect("submissionKey" in body).toBe(false);
   });
 
+  it("mints a resume capability for public and invitation submits", async () => {
+    const fetch = mockFetch(envelope({ resumeToken: "c".repeat(64) }));
+    vi.stubGlobal("fetch", fetch);
+    const sdk = new FavCRM({ baseUrl: "https://api.test.com", companyId: "company-1" });
+
+    const capability = await sdk.surveys.mintResumeCapability("survey-1");
+    expect(fetch.mock.calls[0][0]).toBe(
+      "https://api.test.com/v6/customer-portal/surveys/survey-1/resume-capability",
+    );
+    expect(fetch.mock.calls[0][1].method).toBe("POST");
+    expect(capability.resumeToken).toBe("c".repeat(64));
+
+    await sdk.surveys.mintResumeCapabilityByToken("invite-token");
+    expect(fetch.mock.calls[1][0]).toBe(
+      "https://api.test.com/v6/customer-portal/surveys/token/invite-token/resume-capability",
+    );
+  });
+
   it("the attribution fixture satisfies the provider contract", () => {
     // Mirrors api docs/survey-response-attribution-v1.md fixtures — kept in
     // lockstep so provider validation and SDK typing never drift.
