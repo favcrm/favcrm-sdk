@@ -210,6 +210,23 @@ export class FireClubAgentAuthClient {
     });
   }
 
+  /**
+   * Passwordless login: email a six-digit code to the Agent. Resolves the same
+   * whether or not the address belongs to an active Agent.
+   */
+  sendLoginOtp(email: string): Promise<{ accepted: true; resendAfterSeconds: number }> {
+    return this.client.request("POST", "/auth/otp", {
+      body: { email: email.trim().toLowerCase(), companyId: this.client.companyId },
+    });
+  }
+
+  /** Exchange the emailed code for an Agent session, or an MFA challenge. */
+  verifyLoginOtp(email: string, code: string): Promise<FireClubAgentLoginResult> {
+    return this.client.request("POST", "/auth/otp/verify", {
+      body: { email: email.trim().toLowerCase(), companyId: this.client.companyId, code },
+    });
+  }
+
   refresh(refreshToken: string): Promise<FireClubAgentSession> {
     return this.client.request("POST", "/auth/refresh", {
       body: { refreshToken },

@@ -141,8 +141,8 @@ export interface FireClubAssignedCustomer {
   lifeStage: string;
   assignedAt: string | null;
   updatedAt: string;
-  maskedEmail: string | null;
-  maskedPhone: string | null;
+  email: string | null;
+  phone: string | null;
 }
 
 export interface FireClubAssignedCustomerMembership {

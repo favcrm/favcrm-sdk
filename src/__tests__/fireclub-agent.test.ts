@@ -53,6 +53,28 @@ describe("FireClubAgentClient", () => {
     });
   });
 
+  it("sends and verifies an email login code with a normalized address and company scope", async () => {
+    fetch.mockResolvedValueOnce(response(envelope({ accepted: true, resendAfterSeconds: 60 })));
+    const sent = await client.auth.sendLoginOtp("  Agent@Example.TEST ");
+    expect(sent).toEqual({ accepted: true, resendAfterSeconds: 60 });
+
+    await client.auth.verifyLoginOtp("Agent@Example.TEST", "123456");
+
+    expect(fetch.mock.calls.map((call) => call[0])).toEqual([
+      "https://api.example.test/v6/fireclub-agent/auth/otp",
+      "https://api.example.test/v6/fireclub-agent/auth/otp/verify",
+    ]);
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+      email: "agent@example.test",
+      companyId: "wolo-company",
+    });
+    expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({
+      email: "agent@example.test",
+      companyId: "wolo-company",
+      code: "123456",
+    });
+  });
+
   it("keeps its Agent bearer token independent and sends it to scoped reads", async () => {
     client.setToken("agent-access-token");
     await client.customers.list({ page: 2, limit: 20, search: "Ada Wong" });
