@@ -199,6 +199,11 @@ export type {
   SurveyResponseStatus,
   SurveyResponseSubmission,
   SurveyResponseResult,
+  SurveyResumeCapability,
+  SurveyResponseMetadata,
+  SurveyResponseAttribution,
+  SurveyAttributionTouch,
+  SurveyAttributionClickIdKey,
 } from "./types/survey.js";
 
 // Types — Blog

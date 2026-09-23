@@ -50,6 +50,7 @@ import type {
   SurveyPublicView,
   SurveyResponseResult,
   SurveyResponseSubmission,
+  SurveyResumeCapability,
 } from "./types/survey.js";
 import type { CmsPage, CmsPageSummary } from "./types/cms.js";
 import type { BlogPost, BlogPostListItem } from "./types/blog.js";
@@ -1139,6 +1140,20 @@ class SurveysClient {
     data: SurveyResponseSubmission,
   ): Promise<SurveyResponseResult> {
     return this.sdk.request("POST", `/surveys/token/${token}/responses`, { body: data });
+  }
+
+  /**
+   * Mint a resume capability before the first submission. Persist it and send
+   * it as `resumeToken` on submit — if the submit reply is then lost, the
+   * identical retry recovers the same response and the held capability still
+   * authorizes resume.
+   */
+  mintResumeCapability(surveyId: string): Promise<SurveyResumeCapability> {
+    return this.sdk.request("POST", `/surveys/${surveyId}/resume-capability`);
+  }
+
+  mintResumeCapabilityByToken(token: string): Promise<SurveyResumeCapability> {
+    return this.sdk.request("POST", `/surveys/token/${token}/resume-capability`);
   }
 }
 
