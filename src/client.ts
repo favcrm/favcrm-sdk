@@ -61,6 +61,7 @@ import type {
   TutorCourseSummary,
   TutorCourseDetail,
   TutorCourseEnrollmentResult,
+  TutorCourseEnrollmentPreview,
   TutorCourseMyEnrollment,
   TutorCoursePaymentInput,
   TutorCoursePaymentSession,
@@ -889,10 +890,22 @@ class TutorCoursesClient {
   enroll(
     courseId: string,
     data: { sectionId: string },
+    options?: { idempotencyKey?: string },
   ): Promise<TutorCourseEnrollmentResult> {
     return this.sdk.request("POST", `/tutor-courses/${courseId}/enrollments`, {
       body: data,
+      idempotencyKey: options?.idempotencyKey ?? crypto.randomUUID(),
     });
+  }
+
+  previewEnrollment(
+    courseId: string,
+    sectionId: string,
+  ): Promise<TutorCourseEnrollmentPreview> {
+    return this.sdk.request(
+      "GET",
+      `/tutor-courses/${courseId}/sections/${sectionId}/enrollment-preview`,
+    );
   }
 
   async listMyEnrollments(): Promise<TutorCourseMyEnrollment[]> {
@@ -905,11 +918,15 @@ class TutorCoursesClient {
   createPayment(
     enrollmentId: string,
     data: TutorCoursePaymentInput,
+    options?: { idempotencyKey?: string },
   ): Promise<TutorCoursePaymentSession> {
     return this.sdk.request(
       "POST",
       `/tutor-courses/my-enrollments/${enrollmentId}/payment`,
-      { body: data },
+      {
+        body: data,
+        idempotencyKey: options?.idempotencyKey ?? crypto.randomUUID(),
+      },
     );
   }
 
@@ -940,11 +957,15 @@ class TutorCoursesClient {
   requestLeave(
     enrollmentId: string,
     data: TutorCourseLeaveRequestInput,
+    options?: { idempotencyKey?: string },
   ): Promise<TutorCourseLeaveRequest> {
     return this.sdk.request(
       "POST",
       `/tutor-courses/my-enrollments/${enrollmentId}/leave-requests`,
-      { body: data },
+      {
+        body: data,
+        idempotencyKey: options?.idempotencyKey ?? crypto.randomUUID(),
+      },
     );
   }
 
@@ -973,11 +994,15 @@ class TutorCoursesClient {
   requestTransfer(
     enrollmentId: string,
     data: TutorCourseTransferRequestInput,
+    options?: { idempotencyKey?: string },
   ): Promise<TutorCourseTransferRequest> {
     return this.sdk.request(
       "POST",
       `/tutor-courses/my-enrollments/${enrollmentId}/transfer-requests`,
-      { body: data },
+      {
+        body: data,
+        idempotencyKey: options?.idempotencyKey ?? crypto.randomUUID(),
+      },
     );
   }
 

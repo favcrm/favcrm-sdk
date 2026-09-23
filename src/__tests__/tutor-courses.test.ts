@@ -58,6 +58,9 @@ describe("TutorCoursesClient", () => {
     expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
       sectionId: "section-1",
     });
+    expect(fetch.mock.calls[0][1].headers).toEqual(
+      expect.objectContaining({ "Idempotency-Key": expect.any(String) }),
+    );
   });
 
   it("builds leave, transfer, and payment-status routes", async () => {
@@ -65,6 +68,7 @@ describe("TutorCoursesClient", () => {
     vi.stubGlobal("fetch", fetch);
 
     await sdk.tutorCourses.listLeaveRequests("enrollment-1");
+    await sdk.tutorCourses.previewEnrollment("course-1", "section-1");
     await sdk.tutorCourses.requestLeave("enrollment-1", {
       occurrenceIds: ["occurrence-1"],
       reason: "Travel",
@@ -76,6 +80,9 @@ describe("TutorCoursesClient", () => {
     await sdk.tutorCourses.getPaymentStatus("enrollment-1", "transaction-1");
 
     const urls = fetch.mock.calls.map((call) => call[0]);
+    expect(urls).toContain(
+      "https://api.test.com/v6/customer-portal/tutor-courses/course-1/sections/section-1/enrollment-preview",
+    );
     expect(urls).toContain(
       "https://api.test.com/v6/customer-portal/tutor-courses/my-enrollments/enrollment-1/leave-requests",
     );

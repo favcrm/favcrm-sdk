@@ -3,7 +3,7 @@ export interface PromotionValidationRequest {
   channel: "booking" | "event" | "online";
   amount: number;
   serviceUuid?: string;
-  eventId?: number;
+  eventId?: string;
 }
 
 export interface PromotionValidationResponse {
