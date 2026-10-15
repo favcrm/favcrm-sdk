@@ -143,12 +143,15 @@ export interface CustomerAiConversation {
 export class FavCRMError extends Error {
   status: number;
   code?: string;
+  /** `error.details` from the API error body (e.g. a registration ticket). */
+  details?: Record<string, unknown>;
 
-  constructor(status: number, message: string, code?: string) {
+  constructor(status: number, message: string, code?: string, details?: Record<string, unknown>) {
     super(message);
     this.name = "FavCRMError";
     this.status = status;
     this.code = code;
+    this.details = details;
   }
 }
 
@@ -381,11 +384,13 @@ export class FavCRM {
     if (!response.ok) {
       let message = "Request failed";
       let code: string | undefined;
+      let details: Record<string, unknown> | undefined;
       try {
         const err = await response.json();
         if (err?.error?.message) {
           message = err.error.message;
           code = err.error.code;
+          if (err.error.details && typeof err.error.details === "object") details = err.error.details;
         } else if (err?.message) {
           message =
             typeof err.message === "string"
@@ -397,7 +402,7 @@ export class FavCRM {
       } catch {
         message = response.statusText || `HTTP ${response.status}`;
       }
-      return { ok: false, error: new FavCRMError(response.status, message, code) };
+      return { ok: false, error: new FavCRMError(response.status, message, code, details) };
     }
 
     if (response.status === 204) {

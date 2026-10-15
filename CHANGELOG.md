@@ -2,6 +2,18 @@
 
 All notable changes to @favcrm/sdk are documented in this file.
 
+## 1.15.0 (2026-10-15)
+
+### New
+
+- **Verified registration for WhatsApp contacts** — `FavCRMError.details` now
+  carries the API's `error.details`; `RegisterInput.registrationTicket`;
+  `CustomerAuthErrorCodes` (`REGISTRATION_REQUIRED`, `PHONE_VERIFICATION_REQUIRED`,
+  `REGISTRATION_REVIEW_REQUIRED`) and `RegistrationRequiredDetails`. A WhatsApp
+  contact that is not a registered member gets `REGISTRATION_REQUIRED` (with a
+  ticket for phone OTP) from `auth.verifyOtp` instead of a token; pass the ticket
+  to `auth.register` to register on the same record.
+
 ## 1.7.1 (2026-07-03)
 
 ### Fixed
