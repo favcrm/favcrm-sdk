@@ -400,10 +400,12 @@ export type { AffordabilityResult } from "./gifts.js";
 
 // Auth
 export { AuthClient } from "./auth.js";
+export { CustomerAuthErrorCodes } from "./types/auth.js";
 export type {
   OtpSendResponse,
   AuthTokenResponse,
   RegisterInput,
+  RegistrationRequiredDetails,
   LoginChannel,
   LoginChannelResponse,
   OtpIdentifier,

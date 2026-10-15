@@ -114,6 +114,14 @@ describe('FavCRM Client', () => {
       await expect(sdk.shop.getProduct('nope')).rejects.toThrow(FavCRMError);
     });
 
+    it('keeps error.code and error.details on FavCRMError', async () => {
+      vi.stubGlobal('fetch', mockFetch(
+        { error: { message: 'Complete registration', code: 'REGISTRATION_REQUIRED', details: { registrationTicket: 't-1', expiresIn: 900 } } }, 403,
+      ));
+      const error = await sdk.shop.getProduct('x').catch((e: unknown) => e as FavCRMError);
+      expect(error).toMatchObject({ status: 403, code: 'REGISTRATION_REQUIRED', details: { registrationTicket: 't-1', expiresIn: 900 } });
+    });
+
     it('throws FavCRMError with plain message field', async () => {
       vi.stubGlobal('fetch', mockFetch({ message: 'Bad request' }, 400));
       try {
