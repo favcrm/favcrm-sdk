@@ -71,6 +71,8 @@ export interface TutorCourseSection {
   currency: string;
   allowMidCourseEnrollment: boolean;
   leaveNoticeHours: number;
+  /** Assigned tutor's display name. Absent on older payloads; null when unset. */
+  tutorName?: string | null;
   occurrences: TutorCourseOccurrence[];
 }
 

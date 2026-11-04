@@ -2,6 +2,13 @@
 
 All notable changes to @favcrm/sdk are documented in this file.
 
+## 1.15.1 (2026-11-03)
+
+### Fixed
+
+- **Tutor course section type** — includes the optional nullable `tutorName`
+  returned by newer APIs, while remaining compatible with older responses.
+
 ## 1.15.0 (2026-10-15)
 
 ### New
