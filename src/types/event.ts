@@ -1,3 +1,5 @@
+import type { PaymentSessionResult } from './payment.js';
+
 export interface EventPublicPresentation {
   overview: string[];
   highlights: Array<{ title: string; description: string }>;
@@ -244,11 +246,8 @@ export interface EventPaymentSessionRequest {
   paymentMethodId?: string;
 }
 
-export interface EventPaymentSession {
+export interface EventPaymentSession extends Partial<PaymentSessionResult> {
   mode?: "gateway" | "manual";
-  paymentUrl?: string;
-  transactionId?: string;
-  sessionId?: string;
   gatewayType?: string;
   registrationStatus?: string;
   paymentInstructions?: string | null;

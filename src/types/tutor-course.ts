@@ -1,3 +1,5 @@
+import type { PaymentSessionResult } from './payment.js';
+
 export type TutorCourseStatus =
   | "draft"
   | "published"
@@ -65,12 +67,14 @@ export interface TutorCourseSection {
   location: string | null;
   timezone: string;
   startsOn: string;
-  endsOn: string;
+  endsOn: string | null;
   capacity: number;
   price: string;
   currency: string;
   allowMidCourseEnrollment: boolean;
   leaveNoticeHours: number;
+  /** Assigned tutor's display name. Absent on older payloads; null when unset. */
+  tutorName?: string | null;
   occurrences: TutorCourseOccurrence[];
 }
 
@@ -153,11 +157,8 @@ export interface TutorCoursePaymentInput {
   paymentMethodId?: string;
 }
 
-export interface TutorCoursePaymentSession {
+export interface TutorCoursePaymentSession extends PaymentSessionResult {
   mode: "gateway";
-  paymentUrl: string;
-  transactionId: string;
-  sessionId: string;
   gatewayType: string;
   expiresAt?: string;
 }

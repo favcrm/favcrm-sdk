@@ -1,3 +1,6 @@
+// Types — Payments
+export type { PaymentSessionResult } from "./types/payment.js";
+
 // Types — Shop
 export type {
   ProductImage,

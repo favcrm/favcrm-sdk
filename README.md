@@ -178,7 +178,16 @@ const order = await sdk.shop.createOrder({
   couponCode: 'SUMMER2026', // optional
 });
 
-console.log(order.id); // Order created and payment processed
+console.log(order.orderId); // Order created
+
+// Hosted gateways (including Wonder) return a provider-neutral checkout URL.
+// Redirect the customer; never collect or handle their card details in your app.
+if (order.paymentUrl) {
+  window.location.assign(order.paymentUrl);
+} else if (order.paymentInstructions) {
+  // Show merchant-provided instructions for non-hosted payment methods.
+  console.log(order.paymentInstructions);
+}
 ```
 
 ---
@@ -237,6 +246,51 @@ if (validation.valid) {
   });
 }
 ```
+
+---
+
+## Hosted one-time payment sessions
+
+For payment contexts that expose hosted sessions, the SDK returns a redirect URL
+and provider-neutral identifiers. Redirect the customer to `paymentUrl`, then
+confirm the final state with the matching payment-status method; returning to a
+success URL is not proof of settlement. Wonder currently supports one-time
+hosted checkout only. Refunds and recurring memberships are not available through
+Wonder, and its merchant credential check does not establish a live connection.
+
+```typescript
+import type { PaymentSessionResult } from '@favcrm/sdk';
+
+const session = await sdk.events.createPaymentSession(
+  registration.id,
+  {
+    successUrl: `${location.origin}/checkout/success`,
+    cancelUrl: `${location.origin}/checkout/cancel`,
+  },
+);
+
+if (
+  session.mode === 'gateway' &&
+  session.paymentUrl &&
+  session.sessionId &&
+  session.transactionId
+) {
+  // paymentUrl, sessionId, and transactionId are provider-neutral.
+  const payment: PaymentSessionResult = session;
+  window.location.assign(payment.paymentUrl);
+}
+
+// On return, query the status API and use its final paymentStatus.
+const status = await sdk.events.getPaymentStatus(
+  registration.id,
+  session.transactionId,
+);
+```
+
+`payments.createIntent` / `events.createPaymentIntent` remain the Stripe
+client-secret flow; use those when integrating Stripe Elements instead of a
+hosted redirect. See [Wonder hosted checkout integration](../connect-api/docs/wonder-hosted-checkout.md)
+for merchant configuration and capability limits.
 
 ---
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FavCRM, FavCRMError } from '../client.js';
+import type { PaymentSessionResult } from '../index.js';
 import {
   clearEventCommandOptions,
   createEventCommandOptions,
@@ -533,14 +534,20 @@ describe('FavCRM Client', () => {
       expect(fetch.mock.calls[0][1].method).toBe('POST');
     });
 
-    it('creates an idempotent hosted payment session and reads payment status', async () => {
-      const fetch = mockFetch(envelope({ transactionId: 'txn-1', paymentUrl: 'https://pay.example.test' }));
+    it('creates a provider-neutral hosted Wonder session and reads payment status', async () => {
+      const session: PaymentSessionResult = {
+        transactionId: 'txn-1',
+        sessionId: 'session-1',
+        paymentUrl: 'https://pay.example.test',
+      };
+      const fetch = mockFetch(envelope({ ...session, mode: 'gateway', gatewayType: 'wonder' }));
       vi.stubGlobal('fetch', fetch);
-      await sdk.events.createPaymentSession(
+      const result = await sdk.events.createPaymentSession(
         'reg-1',
         { successUrl: 'https://portal.example.test/success', cancelUrl: 'https://portal.example.test/cancel' },
         { idempotencyKey: '6887a364-8c9f-48c3-b258-fc9bf4fd7a87' },
       );
+      expect(result).toMatchObject({ ...session, mode: 'gateway', gatewayType: 'wonder' });
       expect(fetch.mock.calls[0][0]).toContain('/event-registrations/reg-1/payment');
       expect(fetch.mock.calls[0][1].headers['Idempotency-Key']).toBe('6887a364-8c9f-48c3-b258-fc9bf4fd7a87');
 
