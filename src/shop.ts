@@ -80,8 +80,9 @@ export function highlightSearchMatch(
 
 export function getEffectivePrice(
   product: Pick<ProductListItem, 'memberPrice' | 'discountPrice' | 'price'>,
+  isMember = true,
 ): number {
-  return product.memberPrice ?? product.discountPrice ?? product.price ?? 0;
+  return (isMember ? product.memberPrice : null) ?? product.discountPrice ?? product.price ?? 0;
 }
 
 export function hasDiscount(

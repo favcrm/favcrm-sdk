@@ -154,6 +154,12 @@ export interface ShopCategory {
   productCount: number;
 }
 
+export type ShopFulfillmentType = 'pickup' | 'delivery';
+export type ShopPaymentState =
+  | 'pending' | 'awaiting_manual' | 'paid' | 'not_required'
+  | 'failed' | 'cancelled' | 'refunded' | 'review_required';
+export type ShopOrderHistoryFilter = 'all' | 'preparing' | 'ready' | 'completed' | 'cancelled' | 'refunded';
+
 export interface ShippingMethod {
   id: number;
   name: string;
@@ -161,6 +167,7 @@ export interface ShippingMethod {
   cost: number;
   freeShippingThreshold: number | null;
   estimatedDays: string | null;
+  fulfillmentType?: ShopFulfillmentType | null;
 }
 
 export interface CreateOrderRequest {
@@ -190,9 +197,94 @@ export interface CreateOrderRequest {
   shippingMethodId?: number;
   promotionCode?: string;
   creditsUsed?: string;
+  expectedQuoteFingerprint?: string;
   paymentMethodId?: string;
   successUrl?: string;
   cancelUrl?: string;
+}
+
+/** An address may be omitted only for a quoted, classified pickup. */
+export type ShopPickupOrderRequest = Omit<CreateOrderRequest, 'shippingAddress'> & {
+  shippingAddress?: CreateOrderRequest['shippingAddress'];
+};
+
+export interface ShopQuoteRequest {
+  lineItems: CreateOrderRequest['lineItems'];
+  shippingMethodId?: number;
+  promotionCode?: string;
+  creditsUsed?: string;
+}
+
+export interface ShopQuote {
+  currency: 'HKD';
+  items: {
+    productId: number;
+    variationId: number | null;
+    quantity: number;
+    unitPriceMinor: number;
+    lineTotalMinor: number;
+  }[];
+  fulfillmentType: ShopFulfillmentType | null;
+  subtotalMinor: number;
+  discountMinor: number;
+  shippingMinor: number;
+  creditsUsedMinor: number;
+  payableMinor: number;
+  quoteFingerprint: string;
+}
+
+export interface ShopOrderResponseItem {
+  variationId: number | null;
+  productName: string;
+  variantName: string | null;
+  sku: string | null;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface ShopOrderCreateResult {
+  orderId: string;
+  orderNumber: string | null;
+  status: string;
+  paymentState: ShopPaymentState;
+  subtotal: number;
+  discountAmount: number;
+  shippingCost: number;
+  totalAmount: number;
+  paymentUrl: string | null;
+  paymentInstructions: string | null;
+  items: ShopOrderResponseItem[];
+  createdAt: string;
+}
+
+export interface ShopOrderHistory {
+  orderId: string;
+  orderNumber: string;
+  status: string;
+  createdAt: string;
+  currency: 'HKD';
+  subtotal: number;
+  discountAmount: number;
+  shippingCost: number;
+  totalAmount: number;
+  creditsUsed: number;
+  fulfillmentType: ShopFulfillmentType | null;
+  pickupReadyAt: string | null;
+  paymentState: ShopPaymentState;
+  paidAt: string | null;
+  items: ShopOrderResponseItem[];
+}
+
+export interface ShopOrderHistoryPage {
+  orders: ShopOrderHistory[];
+  nextCursor: string | null;
+}
+
+export interface ShopOrderHistoryPageParams {
+  limit?: number;
+  cursor?: string;
+  status?: ShopOrderHistoryFilter;
 }
 
 export interface PaymentMethodOption {
@@ -236,6 +328,7 @@ export interface ShopOrderPaymentStatus {
   orderStatus: 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled' | 'refunded' | (string & {});
   /** Payment status returned by the payment gateway / FavCRM billing. */
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded' | 'voided' | (string & {});
+  paymentState?: ShopPaymentState;
   paidAt: string | null;
 }
 

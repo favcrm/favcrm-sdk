@@ -2,6 +2,15 @@
 
 All notable changes to @favcrm/sdk are documented in this file.
 
+## 1.16.0 (2026-11-19)
+
+### New
+
+- **Shop checkout and order history** — quote carts, submit idempotent orders
+  against a quote, discover fulfillment classifications, and retrieve paginated
+  customer order history and normalized payment states. Pickup-aware checkout
+  helpers and guest pricing are opt-in; legacy defaults remain unchanged.
+
 ## 1.15.1 (2026-11-03)
 
 ### Fixed

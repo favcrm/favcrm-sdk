@@ -1,4 +1,4 @@
-import type { CartItem, CreateOrderRequest, ShippingMethod } from './types/shop.js';
+import type { CartItem, CreateOrderRequest, ShippingMethod, ShopPickupOrderRequest } from './types/shop.js';
 import { validateEmail } from './validation.js';
 
 export interface CheckoutFormFields {
@@ -25,13 +25,13 @@ export function calculateFinalTotal(
 
 export function validateCheckoutForm(
   fields: Pick<CheckoutFormFields, 'firstName' | 'lastName' | 'email' | 'addressLine1' | 'city'>,
+  options?: { requiresAddress?: boolean },
 ): string | null {
   if (
     !fields.firstName.trim() ||
     !fields.lastName.trim() ||
     !fields.email.trim() ||
-    !fields.addressLine1.trim() ||
-    !fields.city.trim()
+    (options?.requiresAddress !== false && (!fields.addressLine1.trim() || !fields.city.trim()))
   ) {
     return 'REQUIRED_FIELDS_MISSING';
   }
@@ -78,15 +78,32 @@ export interface PaymentOptions {
   successUrl?: string;
   cancelUrl?: string;
   acceptedOffers?: CreateOrderRequest['acceptedOffers'];
+  expectedQuoteFingerprint?: string;
+  /** Only set after verifying the quoted fulfillment type is pickup. */
+  omitShippingAddress?: boolean;
 }
 
 export function buildCreateOrderRequest(
   cart: CartItem[],
   form: CheckoutFormFields,
   shippingMethodId: number | null,
+  promotionCode: string | undefined,
+  payment: PaymentOptions & { omitShippingAddress: true },
+): ShopPickupOrderRequest;
+export function buildCreateOrderRequest(
+  cart: CartItem[],
+  form: CheckoutFormFields,
+  shippingMethodId: number | null,
   promotionCode?: string,
   payment?: PaymentOptions,
-): CreateOrderRequest {
+): CreateOrderRequest;
+export function buildCreateOrderRequest(
+  cart: CartItem[],
+  form: CheckoutFormFields,
+  shippingMethodId: number | null,
+  promotionCode?: string,
+  payment?: PaymentOptions,
+): ShopPickupOrderRequest {
   return {
     lineItems: cart.map((item) => ({
       productId: item.product.id,
@@ -100,12 +117,12 @@ export function buildCreateOrderRequest(
       phone: form.phone.trim() || undefined,
       ...(form.language ? { language: form.language } : {}),
     },
-    shippingAddress: {
+    ...(!payment?.omitShippingAddress && { shippingAddress: {
       addressLine1: form.addressLine1.trim(),
       addressLine2: form.addressLine2.trim() || undefined,
       city: form.city.trim(),
       country: form.country,
-    },
+    } }),
     shippingMethodId: shippingMethodId ?? undefined,
     promotionCode,
     ...(payment?.acceptedOffers != null &&
@@ -114,6 +131,7 @@ export function buildCreateOrderRequest(
       }),
     ...(payment?.paymentMethodId != null && { paymentMethodId: payment.paymentMethodId }),
     ...(payment?.creditsUsed != null && { creditsUsed: payment.creditsUsed }),
+    ...(payment?.expectedQuoteFingerprint != null && { expectedQuoteFingerprint: payment.expectedQuoteFingerprint }),
     ...(payment?.successUrl != null && { successUrl: payment.successUrl }),
     ...(payment?.cancelUrl != null && { cancelUrl: payment.cancelUrl }),
   };

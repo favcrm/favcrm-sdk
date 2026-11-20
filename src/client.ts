@@ -9,6 +9,13 @@ import type {
   CreateOrderRequest,
   ShopOrder,
   ShopOrderPaymentStatus,
+  ShopPickupOrderRequest,
+  ShopQuoteRequest,
+  ShopQuote,
+  ShopOrderCreateResult,
+  ShopOrderHistory,
+  ShopOrderHistoryPage,
+  ShopOrderHistoryPageParams,
   ShopOffer,
   ShopOfferListParams,
 } from "./types/shop.js";
@@ -600,14 +607,14 @@ class ShopClient {
   }
 
   getProduct(slug: string): Promise<Product> {
-    return this.sdk.request("GET", `/shop/products/${slug}`);
+    return this.sdk.request("GET", `/shop/products/${encodeURIComponent(slug)}`);
   }
 
   getRelatedProducts(
     slug: string,
     limit: number = 4,
   ): Promise<ProductListItem[]> {
-    return this.sdk.request("GET", `/shop/products/${slug}/related`, {
+    return this.sdk.request("GET", `/shop/products/${encodeURIComponent(slug)}/related`, {
       params: { limit: String(limit) },
     });
   }
@@ -654,12 +661,30 @@ class ShopClient {
     return this.sdk.request("GET", "/offers", { params: p });
   }
 
-  createOrder(data: CreateOrderRequest): Promise<ShopOrder> {
-    return this.sdk.request("POST", "/shop/orders", { body: data });
+  quoteOrder(data: ShopQuoteRequest): Promise<ShopQuote> {
+    return this.sdk.request("POST", "/shop/orders/quote", { body: data });
+  }
+
+  createOrder(data: CreateOrderRequest): Promise<ShopOrder>;
+  createOrder(data: CreateOrderRequest | ShopPickupOrderRequest, options: { idempotencyKey?: string }): Promise<ShopOrderCreateResult>;
+  createOrder(data: CreateOrderRequest | ShopPickupOrderRequest, options?: { idempotencyKey?: string }): Promise<ShopOrder | ShopOrderCreateResult> {
+    return this.sdk.request("POST", "/shop/orders", { body: data, idempotencyKey: options?.idempotencyKey });
   }
 
   listOrders(): Promise<ShopOrder[]> {
     return this.sdk.request("GET", "/shop/orders");
+  }
+
+  listOrdersPage(params?: ShopOrderHistoryPageParams): Promise<ShopOrderHistoryPage> {
+    const p: Record<string, string> = { view: "page" };
+    if (params?.limit !== undefined) p.limit = String(params.limit);
+    if (params?.cursor !== undefined) p.cursor = params.cursor;
+    if (params?.status !== undefined) p.status = params.status;
+    return this.sdk.request("GET", "/shop/orders", { params: p });
+  }
+
+  getOrderHistoryDetail(orderId: string): Promise<ShopOrderHistory> {
+    return this.sdk.request("GET", `/shop/orders/${encodeURIComponent(orderId)}`, { params: { view: "history" } });
   }
 
   getOrder(orderUuid: string): Promise<ShopOrder> {
